@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+
+<html lang="ko"><head><meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+<title>윈트티켓 | 공연의 설렘이 시작되는 곳</title>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="티켓, 콘서트, 테마/지역, 랭킹, 티켓오픈소식, 이벤트, FouU, 마이티켓" name="keywords"/>
+<meta content="윈트티켓에서 콘서트, 뮤지컬, 전시와 페스티벌을 만나보세요." name="description"/>
+<meta content="윈트티켓" property="og:site_name"/>
+<style type="text/css">input.styled { display: none; } select.styled { position: relative; width: 190px; opacity: 0; filter: alpha(opacity=0); z-index: 5; } .disabled { opacity: 0.5; filter: alpha(opacity=50); }</style>
+<link href="assets/reference.css" rel="stylesheet"/><link href="assets/winticket.css" rel="stylesheet"/><link href="assets/logo.svg" rel="icon" type="image/svg+xml"/><link href="https://winticket.saevit.online/" rel="canonical"/></head>
+<body>
+<div class="main" id="wrap">
+<div id="skip_nav">
+<ul>
+<li><a data-action-label="메뉴" href="#gnb_menu">메뉴</a></li>
+<li><a data-action-label="본문" href="#cont_wrap">본문</a></li>
+<li><a href="#footer">하단 정보</a></li>
+</ul>
+</div>
+<div id="header">
+<div class="pr_none" id="header_wrap">
+<div class="clear_g" id="gnb">
+<div id="util_menu">
+<p class="screen_out">상단 빠른 메뉴</p>
+<div class="top_left"><a class="brand-network" href="/">윈트티켓</a></div>
+<div class="top_right">
+<ul class="clear_g">
+<li class="name" id="name_area"></li>
+<li><span id="login_area"><a class="wint-util" data-action-label="로그인" href="#">로그인</a></span></li>
+<li id="sub_area"><a class="wint-util" data-action-label="회원가입" href="#">회원가입</a></li>
+<li><a class="wint-util" data-action-label="고객센터" href="#">고객센터</a></li>
+<li><a class="wint-util" data-action-label="이용안내" href="#">이용안내</a></li>
+<li class="global_link">
+</li>
+</ul>
+</div>
+</div>
+<h1 id="logo"><a href="/"><img alt="윈트티켓" src="assets/logo.svg"/></a></h1>
+<div class="srch_set">
+<fieldset>
+<legend>통합검색영역</legend>
+<input class="placeholder" id="top_search" name="" placeholder="국내 최대 J-POP 페스티벌 &lt;원더리벳&gt;" title="검색 입력 편집창" type="text"/>
+<input id="searchValue" type="hidden" value="원더리벳 2026"/>
+<input id="placeholderValue" type="hidden" value="국내 최대 J-POP 페스티벌 &lt;원더리벳&gt;"/>
+<button a_value="" class="btn_icon search_m" id="btn_top_search" title="검색" type="button"><span class="btn_comm">검색</span></button>
+</fieldset>
+</div>
+<div class="cmn_banner" style=""><a class="item" data-action-label="공연 안내" href="#" style="display: none;"><img alt="" height="75" src="assets/2025040116040243e2e12e-1a69-4ab4-9da7-b136f0b4f2d4.png" width="280"/></a><a class="item" data-action-label="공연 안내" href="#" style="display: none;"><img alt="" height="75" src="assets/202601061111366e948ab7-f7b2-4ce6-be17-163ddf894657.png" width="280"/></a><a class="item" data-action-label="공연 안내" href="#" style=""><img alt="" height="75" src="assets/20260129120339f5de0cd7-8330-490a-aac5-70f3c4baf8d0.png" width="280"/></a><a class="item" data-action-label="공연 안내" href="#" style="display: none;"><img alt="" height="75" src="assets/2023041917270620df2d21-de43-4bf7-b687-279b3da31e11.jpg" width="280"/></a><a class="item" data-action-label="공연 안내" href="#" style="display: none;"><img alt="" height="75" src="assets/202107191048488ee615b7-f65e-40ee-afa2-2d00fa9e4bcc.jpg" width="280"/></a>
+<div class="gnb_banner_btn">
+<a class="btn prev d_btn_ctrl" data-action-label="이전 이벤트 보기" href="#" title="이전 이벤트 보기">이전 이벤트 보기</a>
+<a class="btn next d_btn_ctrl" data-action-label="다음 이벤트 보기" href="#" title="다음 이벤트 보기">다음 이벤트 보기</a>
+</div>
+</div>
+</div>
+<div id="gnb_menu">
+<ul class="list_gnb">
+<li class="nth2">
+<a class="wint-nav" data-action-label="콘서트" href="#">콘서트</a>
+</li>
+<li class="nth3">
+<a class="wint-nav" data-action-label="뮤지컬/연극" href="#">뮤지컬/연극</a>
+</li>
+<li class="nth12">
+<a class="wint-nav" data-action-label="팬클럽/팬미팅" href="#">팬클럽/팬미팅</a>
+</li>
+<li class="nth10">
+<a class="wint-nav" data-action-label="클래식" href="#">클래식</a>
+</li>
+<li class="nth11">
+<a class="wint-nav" data-action-label="전시/행사" href="#">전시/행사</a>
+</li>
+<li class="nth4">
+<a class="wint-nav" data-action-label="테마/지역" href="#">테마/지역</a>
+</li>
+<li class="nth5">
+<a class="wint-nav" data-action-label="랭킹" href="#">랭킹</a>
+</li>
+<li class="nth6">
+<a class="wint-nav" data-action-label="티켓오픈소식" href="#">티켓오픈소식</a>
+</li>
+<li class="nth7">
+<a class="wint-nav" data-action-label="이벤트" href="#">이벤트</a>
+<div class="lay_menu">
+<ul>
+<li><a class="wint-subnav" data-action-label="전체이벤트" href="#">전체이벤트</a></li>
+<li><a class="wint-subnav" data-action-label="당첨자발표" href="#">당첨자발표</a></li>
+<li><a class="wint-subnav" data-action-label="참여이벤트" href="#">참여이벤트</a></li>
+</ul>
+</div>
+</li>
+<li class="nth9">
+<a class="wint-nav" data-action-label="마이티켓" href="#">마이티켓</a>
+<div class="lay_menu">
+<ul>
+<li><a class="wint-subnav" data-action-label="마이티켓홈" href="#">마이티켓홈</a></li>
+<li><a class="wint-subnav" data-action-label="예매확인/취소" href="#">예매확인/취소</a></li>
+<li><a class="wint-subnav" data-action-label="할인쿠폰" href="#">할인쿠폰</a></li>
+<li><a class="wint-subnav" data-action-label="공연예매권" href="#">공연예매권</a></li>
+</ul>
+</div>
+</li>
+</ul>
+</div></div>
+</div>
+<div class="clear_g" id="cont_wrap">
+<div class="wrap_main_slider">
+<div id="slider">
+<a class="prev" data-action-label="이전" href="#"><span class="btn_comm btn_mslider_prev">이전</span></a>
+<div class="slider_inner">
+<ul class="list_slider" id="sliderInner" style="width: 3288px; left: -1096px; margin-left: 0px;">
+<li class="">
+<a data-action-label="원더리벳 2026 더오랄시가렛, 알렉산드로스, 유즈 등 WONDERLIVET 2026 (원더리벳 2026) 2026.11.20 - 2026.11.22" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="원더리벳 2026 더오랄시가렛, 알렉산드로스, 유즈 등 WONDERLIVET 2026 (원더리벳 2026) 2026.11.20 - 2026.11.22" src="assets/optimize-3-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">원더리벳 2026</span>
+<span class="opt">더오랄시가렛, 알렉산드로스, 유즈 등</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">WONDERLIVET 2026 (원더리벳 2026)</span>
+<span class="day">2026.11.20 - 2026.11.22</span>
+</span>
+</a>
+</li>
+<li class="">
+<a data-action-label="그라운드시소 전시 모음 브래드 월스전, 표기식 사진전, 성률 기획전 그라운드시소 전시 2026.04.30 - 2027.03.01" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="그라운드시소 전시 모음 브래드 월스전, 표기식 사진전, 성률 기획전 그라운드시소 전시 2026.04.30 - 2027.03.01" src="assets/optimize-4-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">그라운드시소 전시 모음</span>
+<span class="opt">브래드 월스전, 표기식 사진전, 성률 기획전</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">그라운드시소 전시</span>
+<span class="day">2026.04.30 - 2027.03.01</span>
+</span>
+</a>
+</li>
+<li class="">
+<a data-action-label="MMA2026 (멜론뮤직어워드) 대한민국 대표 음악 시상식 MMA MMA2026 (멜론뮤직어워드) 2026.11.14 - 2026.11.15" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="MMA2026 (멜론뮤직어워드) 대한민국 대표 음악 시상식 MMA MMA2026 (멜론뮤직어워드) 2026.11.14 - 2026.11.15" src="assets/optimize-5-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">MMA2026 (멜론뮤직어워드)</span>
+<span class="opt">대한민국 대표 음악 시상식 MMA</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">MMA2026 (멜론뮤직어워드)</span>
+<span class="day">2026.11.14 - 2026.11.15</span>
+</span>
+</a>
+</li><li class="on">
+<a data-action-label="2026 청년문화예술패스 06~07년생 덕질지원금 2026 청년문화예술패스 2026-08-10 - 2026-12-31" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="2026 청년문화예술패스 06~07년생 덕질지원금 2026 청년문화예술패스 2026-08-10 - 2026-12-31" src="assets/optimize-6-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">2026 청년문화예술패스</span>
+<span class="opt">06~07년생 덕질지원금</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">2026 청년문화예술패스</span>
+<span class="day">2026-08-10 - 2026-12-31</span>
+</span>
+</a>
+</li><li class="on">
+<a data-action-label="이런 공연 어때? 나만 알고 싶은 공연 이주의 추천공연 2018-05-03 - 2099-12-31" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="이런 공연 어때? 나만 알고 싶은 공연 이주의 추천공연 2018-05-03 - 2099-12-31" src="assets/optimize-7-.png"/>
+<span class="frame"></span>
+</span>
+<span class="thumb_on">
+<img alt="이런 공연 어때? 나만 알고 싶은 공연 이주의 추천공연 2018-05-03 - 2099-12-31" src="assets/optimize-8-.png"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">이런 공연 어때?</span>
+<span class="opt">나만 알고 싶은 공연</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">이주의 추천공연</span>
+<span class="day">2018-05-03 - 2099-12-31</span>
+</span>
+</a>
+</li><li class="on">
+<a class="" data-action-label="2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul 2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul 2026.12.05 - 2026.12.06" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul 2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul 2026.12.05 - 2026.12.06" src="assets/optimize-9-.png"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">2026 AND2BLE FAN-CON</span>
+<span class="opt">〈W!nter inside〉 In Seoul</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul</span>
+<span class="day">2026.12.05 - 2026.12.06</span>
+</span>
+</a>
+</li><li class="">
+<a data-action-label="SJF at the Theater 2026 킹오컨, 다이애나 크롤, 크리스토퍼, 백예린x윤석철 SJF at the Theater 2026 2026.11.18 - 2026.11.22" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="SJF at the Theater 2026 킹오컨, 다이애나 크롤, 크리스토퍼, 백예린x윤석철 SJF at the Theater 2026 2026.11.18 - 2026.11.22" src="assets/optimize-10-.png"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">SJF at the Theater 2026</span>
+<span class="opt">킹오컨, 다이애나 크롤, 크리스토퍼, 백예린x윤석철</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">SJF at the Theater 2026</span>
+<span class="day">2026.11.18 - 2026.11.22</span>
+</span>
+</a>
+</li><li class="">
+<a data-action-label="2027 에픽하이 콘서트 타블로 ・ 미쓰라 ・ 투컷 체조 회동 2027 에픽하이 콘서트 2027.01.22 - 2027.01.24" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="2027 에픽하이 콘서트 타블로 ・ 미쓰라 ・ 투컷 체조 회동 2027 에픽하이 콘서트 2027.01.22 - 2027.01.24" src="assets/optimize-11-.png"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">2027 에픽하이 콘서트</span>
+<span class="opt">타블로 ・ 미쓰라 ・ 투컷 체조 회동</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">2027 에픽하이 콘서트</span>
+<span class="day">2027.01.22 - 2027.01.24</span>
+</span>
+</a>
+</li><li class="">
+<a data-action-label="NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL 2027.01.15 - 2027.01.16" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our W" src="assets/optimize-12-.png"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">NCT WISH 2nd CONCERT TOUR</span>
+<span class="opt">‘INTO THE WISH : Face Our WISH’ IN SEOUL</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL</span>
+<span class="day">2027.01.15 - 2027.01.16</span>
+</span>
+</a>
+</li><li class="">
+<a data-action-label="뮤지컬 〈엘리자벳〉 죽음마저 사랑에 빠지게 한 아름다운 황후 뮤지컬 〈엘리자벳〉 2026.08.16 - 2026.11.15" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="뮤지컬 〈엘리자벳〉 죽음마저 사랑에 빠지게 한 아름다운 황후 뮤지컬 〈엘리자벳〉 2026.08.16 - 2026.11.15" src="assets/optimize.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">뮤지컬 〈엘리자벳〉</span>
+<span class="opt">죽음마저 사랑에 빠지게 한 아름다운 황후</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">뮤지컬 〈엘리자벳〉</span>
+<span class="day">2026.08.16 - 2026.11.15</span>
+</span>
+</a>
+</li><li class="">
+<a data-action-label="뮤지컬 〈레베카〉 완벽함을 넘어선 최고의 뮤지컬 뮤지컬 &lt;레베카&gt; 2026.11.24 - 2027.03.14" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="뮤지컬 〈레베카〉 완벽함을 넘어선 최고의 뮤지컬 뮤지컬 &lt;레베카&gt; 2026.11.24 - 2027.03.14" src="assets/optimize-1-.png"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">뮤지컬 〈레베카〉</span>
+<span class="opt">완벽함을 넘어선 최고의 뮤지컬</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">뮤지컬 &lt;레베카&gt;</span>
+<span class="day">2026.11.24 - 2027.03.14</span>
+</span>
+</a>
+</li><li class="">
+<a data-action-label="뮤지컬 〈두 도시 이야기〉 카이 ・ 신성록 ・ 고은성! 뮤지컬 〈두 도시 이야기〉 2026.11.11 - 2027.02.08" href="#">
+<span class="thumb">
+<span class="thumb_off">
+<img alt="뮤지컬 〈두 도시 이야기〉 카이 ・ 신성록 ・ 고은성! 뮤지컬 〈두 도시 이야기〉 2026.11.11 - 2027.02.08" src="assets/optimize-2-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+<span class="txt">
+<span class="name">뮤지컬 〈두 도시 이야기〉</span>
+<span class="opt">카이 ・ 신성록 ・ 고은성!</span>
+</span>
+<span class="txt txt_hover">
+<span class="name">뮤지컬 〈두 도시 이야기〉</span>
+<span class="day">2026.11.11 - 2027.02.08</span>
+</span>
+</a>
+</li></ul>
+</div>
+<a class="next" data-action-label="다음" href="#"><span class="btn_comm btn_mslider_next">다음</span></a>
+<a class="btn_comm btn_slider_play play" data-action-label="재생" href="#" style="display: none;">재생</a>
+<a class="btn_comm btn_slider_stop stop" data-action-label="멈춤" href="#">멈춤</a>
+</div>
+</div>
+<div class="pr_none" id="conts_section">
+<div class="clear_g" id="conts">
+<div class="wrap_main_performance">
+<ul class="list_main_performance">
+<li class="nth1" id="offer_performance1">
+<h2 class="tit"><a data-action-label="내한 공연" href="#">내한 공연</a></h2>
+<div class="box_cont">
+<ul id="MAIN_B_CO_3"><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="CUTIE STREET Live in Korea 2027 WINTER" loading="lazy" src="assets/optimize-13-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="CUTIE STREET Live in Korea 2027 WINTER" href="#">CUTIE STREET Live in Korea 2027 WINTER</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="홈커밍스 내한 공연 “You are you, even if no one fill in about you.”" loading="lazy" src="assets/optimize-14-.png"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="홈커밍스 내한 공연 “You are you, even if no one fill in about you.”" href="#">홈커밍스 내한 공연 “You are you, even if no one fill in about you.”</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="SJF at the Theater 2026 - Diana Krall" loading="lazy" src="assets/optimize-15-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="SJF at the Theater 2026 - Diana Krall" href="#">SJF at the Theater 2026 - Diana Krall</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="Batimento Dúo Tango Live Tour with Tanaka Shinji, Koh Sangji" loading="lazy" src="assets/optimize-16-.png"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="Batimento Dúo Tango Live Tour with Tanaka Shinji, Koh Sangji" href="#">Batimento Dúo Tango Live Tour with Tanaka Shinji, Koh Sangji</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="MEIYO DENSETSU 1st ONEMAN TOUR 2026" loading="lazy" src="assets/optimize-17-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="MEIYO DENSETSU 1st ONEMAN TOUR 2026" href="#">MEIYO DENSETSU 1st ONEMAN TOUR 2026</a></div></li></ul>
+</div>
+</li>
+<li class="nth2" id="offer_performance2">
+<h2 class="tit"><a data-action-label="오픈 예정 공연" href="#">오픈 예정 공연</a></h2>
+<div class="box_cont">
+<ul id="MAIN_B_CO_2"><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="2026 aespa FAN MEETING “MY 보고싶다 ae가”" loading="lazy" src="assets/optimize-18-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="2026 aespa FAN MEETING “MY 보고싶다 ae가”" href="#">2026 aespa FAN MEETING “MY 보고싶다 ae가”</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL" loading="lazy" src="assets/optimize-19-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL" href="#">NCT WISH 2nd CONCERT TOUR ‘INTO THE WISH : Face Our WISH’ IN SEOUL</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="김뮤지엄 단독 콘서트 2026 〈FROM ZERO.〉" loading="lazy" src="assets/optimize-20-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="김뮤지엄 단독 콘서트 2026 〈FROM ZERO.〉" href="#">김뮤지엄 단독 콘서트 2026 〈FROM ZERO.〉</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="백현진 연말 콘서트 〈건강!〉" loading="lazy" src="assets/optimize-21-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="백현진 연말 콘서트 〈건강!〉" href="#">백현진 연말 콘서트 〈건강!〉</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="불나방스타쏘세지클럽 콘서트 〈모여봐요 괴물의 농장〉" loading="lazy" src="assets/optimize-22-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="불나방스타쏘세지클럽 콘서트 〈모여봐요 괴물의 농장〉" href="#">불나방스타쏘세지클럽 콘서트 〈모여봐요 괴물의 농장〉</a></div></li></ul>
+</div>
+</li>
+<li class="nth3 on" id="offer_performance3">
+<h2 class="tit"><a data-action-label="이 주의 추천공연" href="#">이 주의 추천공연</a></h2>
+<div class="box_cont">
+<ul id="MAIN_B_CO_1"><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="연극 〈에너미〉" loading="lazy" src="assets/optimize-23-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="연극 〈에너미〉" href="#">연극 〈에너미〉</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="신해경 단독 콘서트 나의 가역반응 사가" loading="lazy" src="assets/optimize-24-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="신해경 단독 콘서트 나의 가역반응 사가" href="#">신해경 단독 콘서트 나의 가역반응 사가</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="KANO MIYU Birthday Live『1999 ep 2026』" loading="lazy" src="assets/optimize-25-.png"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="KANO MIYU Birthday Live『1999 ep 2026』" href="#">KANO MIYU Birthday Live『1999 ep 2026』</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="윤덕원 x 황푸하 [올해의 농담]" loading="lazy" src="assets/optimize-26-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="윤덕원 x 황푸하 [올해의 농담]" href="#">윤덕원 x 황푸하 [올해의 농담]</a></div></li><li><div class="thumb"><a data-action-label="공연 안내" href="#"><img alt="숲세권 라이브 : 개똥 단독 공연 〈버드나무〉" loading="lazy" src="assets/optimize-27-.jpg"/><span class="frame"></span></a></div><div class="txt"><a data-action-label="숲세권 라이브 : 개똥 단독 공연 〈버드나무〉" href="#">숲세권 라이브 : 개똥 단독 공연 〈버드나무〉</a></div></li></ul>
+</div>
+</li>
+</ul>
+</div>
+<div class="wrap_main_banner" id="cBanner">
+<a data-action-label="공연 안내" href="#" style=""><img alt="W24 ‘NEXT CHAPTER : BEST CHAPTER’ Section 11. 롤링홀" loading="lazy" src="assets/202610221138593e7ecf4e-a159-46e6-badf-827df535d6ea.jpg" width="100%"/></a>
+<a data-action-label="공연 안내" href="#" style="display:none;"><img alt="암표방지 캠페인" loading="lazy" src="assets/2026040211170628febf7f-d9ae-4ccf-8f41-9f0d105e6316.png" width="100%"/></a>
+<a data-action-label="공연 안내" href="#" style="display:none;"><img alt="Anime X Game Festival 2026 브릿지" loading="lazy" src="assets/20261022113715e23ebd9a-d5d7-49c1-9458-787012ff0699.png" width="100%"/></a>
+<a data-action-label="공연 안내" href="#" style="display:none;"><img alt="2026 체리블라썸뮤직콘서트 인 윈터" loading="lazy" src="assets/202608271137076421748a-f541-4faa-b7e2-cc6b87d0ffba.png" width="100%"/></a>
+</div>
+<div class="wrap_main_float">
+<div class="box_ticket_open">
+<h2 class="tit_main_float">티켓오픈소식</h2>
+<ul class="list_ticket_open">
+<li class="nth1">
+<a class="inner inner_ico" data-action-label="단독판매 PARK JINYOUNG 1ST CONCERT TOUR [CODE#] IN SEOUL 추가 티켓 오픈 안내 [오픈]26.10.26(월) 20:00" href="#">
+<span class="ico"><span class="ico1">단독판매</span></span>
+<span class="txt">PARK JINYOUNG 1ST CONCERT TOUR [CODE#] IN SEOUL 추가 티켓 오픈 안내</span>
+<span class="more">[오픈]26.10.26(월) 20:00</span>
+</a>
+</li>
+<li class="nth2">
+<a class="inner inner_ico" data-action-label="단독판매 2026 hrtz.wav 1st CONNECT!ON 〈TUNE IN〉 티켓 오픈 안내 오픈일정 보기 &gt;" href="#">
+<span class="ico"><span class="ico1">단독판매</span></span>
+<span class="txt">2026 hrtz.wav 1st CONNECT!ON 〈TUNE IN〉 티켓 오픈 안내</span>
+<span class="more">오픈일정 보기 &gt;</span>
+</a>
+</li>
+<li class="nth3">
+<a class="inner inner_ico" data-action-label="단독판매 〈Biuret 4 Seasons : Winter〉 티켓 오픈 안내 [오픈]26.10.28(수) 20:00" href="#">
+<span class="ico"><span class="ico1">단독판매</span></span>
+<span class="txt">〈Biuret 4 Seasons : Winter〉 티켓 오픈 안내</span>
+<span class="more">[오픈]26.10.28(수) 20:00</span>
+</a>
+</li>
+<li class="nth4">
+<a class="inner" data-action-label="한로로 5th 단독콘서트 [물음표] 티켓 오픈 안내 [오픈]26.11.13(금) 18:00" href="#">
+<span class="txt">한로로 5th 단독콘서트 [물음표] 티켓 오픈 안내</span>
+<span class="more">[오픈]26.11.13(금) 18:00</span>
+</a>
+</li>
+</ul>
+<div class="ctr"><a class="ico_more" data-action-label="더보기" href="#">더보기</a></div>
+</div>
+<div class="box_for_u">
+<h2 class="tit_main_float"><span class="eng">For U</span></h2>
+<div id="foru_infos">
+<div class="cont_for_u3" style="display:block">
+<div class="inner">
+<p class="tit">당신을 위한 맞춤 공연</p>
+<strong class="for_u3_txt">나에게 딱 맞는 <span>공연 추천</span>과 <br/><span>공연 스케줄 관리</span>를 시작해보세요!</strong>
+<div class="thumb" style="position:relative;">
+<img alt="공연 안내 이미지" height="88" loading="lazy" src="assets/mian_foru_img.png" style="vertical-align:top;" width="257"/>
+<span class="frame_160_160_radius"></span>
+</div>
+<a class="btn_flexible2 btn_no_radius_43_gray" data-action-label="For U 시작하기" href="#"><span>For U 시작하기</span></a>
+</div>
+</div>
+<div class="ctr"><a class="ico_more" data-action-label="더보기" href="#">더보기</a></div>
+</div>
+</div>
+<div class="box_ranking">
+<h2 class="tit_main_float">랭킹</h2>
+<div class="wrap_main_rank">
+<ul class="list_main_rank">
+<li class="nth1 on">
+<h2 class="tit"><a data-action-label="콘서트/페스티벌" href="#">콘서트/페스티벌</a></h2>
+<div class="box_cont">
+<ol class="list_ranking">
+<li class="nth1">
+<a class="item" data-action-label="1 신규 2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul 2026.12.05 - 2026.12.06 고려대학교 화정체육관" href="#">
+<span class="inner">
+<span class="ranking">1</span>
+<span class="change"><span class="ico_change ico_new"></span><span class="screen_out">신규</span></span>
+<strong class="tit_cont">2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul</strong>
+<span class="day">2026.12.05 - 2026.12.06</span>
+<span class="location">고려대학교 화정체육관 </span>
+<span class="thumb">
+<img alt="1 신규 2026 AND2BLE FAN-CON 〈W!nter inside〉 In Seoul 2026.12.05 - 2026.12.06 고려대학교 화정체육관" loading="lazy" src="assets/80.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+<li class="nth2">
+<a class="item" data-action-label="2 - 순위유지 2027 에픽하이 콘서트 2027.01.22 - 2027.01.24 KSPO DOME" href="#">
+<span class="inner">
+<span class="ranking">2</span>
+<span class="change">-<span class="screen_out">순위유지</span></span>
+<strong class="tit_cont">2027 에픽하이 콘서트</strong>
+<span class="day">2027.01.22 - 2027.01.24</span>
+<span class="location">KSPO DOME </span>
+<span class="thumb">
+<img alt="2 - 순위유지 2027 에픽하이 콘서트 2027.01.22 - 2027.01.24 KSPO DOME" loading="lazy" src="assets/80-1-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+<li class="nth3">
+<a class="item" data-action-label="3 2 단계 하락 2026 영탁 단독 콘서트 “TAK SHOW5” - 인천 2026.12.19 - 2026.12.20 인천 남동체육관" href="#">
+<span class="inner">
+<span class="ranking">3</span>
+<span class="change"><span class="ico_change ico_down">2</span><span class="screen_out">단계 하락</span></span>
+<strong class="tit_cont">2026 영탁 단독 콘서트 “TAK SHOW5” - 인천</strong>
+<span class="day">2026.12.19 - 2026.12.20</span>
+<span class="location">인천 남동체육관 </span>
+<span class="thumb">
+<img alt="3 2 단계 하락 2026 영탁 단독 콘서트 “TAK SHOW5” - 인천 2026.12.19 - 2026.12.20 인천 남동체육관" loading="lazy" src="assets/80-2-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+</ol>
+</div>
+</li>
+<li class="nth2">
+<h2 class="tit"><a data-action-label="뮤지컬/연극" href="#">뮤지컬/연극</a></h2>
+<div class="box_cont">
+<ol class="list_ranking">
+<li class="nth1">
+<a class="item" data-action-label="1 - 순위유지 뮤지컬 〈엘리자벳〉 2026.08.16 - 2026.11.15 블루스퀘어 우리은행홀" href="#">
+<span class="inner">
+<span class="ranking">1</span>
+<span class="change">-<span class="screen_out">순위유지</span></span>
+<strong class="tit_cont">뮤지컬 〈엘리자벳〉</strong>
+<span class="day">2026.08.16 - 2026.11.15</span>
+<span class="location">블루스퀘어 우리은행홀 </span>
+<span class="thumb">
+<img alt="1 - 순위유지 뮤지컬 〈엘리자벳〉 2026.08.16 - 2026.11.15 블루스퀘어 우리은행홀" loading="lazy" src="assets/80-3-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+<li class="nth2">
+<a class="item" data-action-label="2 1 단계 상승 뮤지컬 〈레베카〉 2026.11.24 - 2027.03.14 충무아트센터 대극장" href="#">
+<span class="inner">
+<span class="ranking">2</span>
+<span class="change"><span class="ico_change ico_up">1</span><span class="screen_out">단계 상승</span></span>
+<strong class="tit_cont">뮤지컬 〈레베카〉</strong>
+<span class="day">2026.11.24 - 2027.03.14</span>
+<span class="location">충무아트센터 대극장</span>
+<span class="thumb">
+<img alt="2 1 단계 상승 뮤지컬 〈레베카〉 2026.11.24 - 2027.03.14 충무아트센터 대극장" loading="lazy" src="assets/80-4-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+<li class="nth3">
+<a class="item" data-action-label="3 1 단계 하락 뮤지컬 〈두 도시 이야기〉 2026.11.11 - 2027.02.08 광림아트센터 BBCH홀" href="#">
+<span class="inner">
+<span class="ranking">3</span>
+<span class="change"><span class="ico_change ico_down">1</span><span class="screen_out">단계 하락</span></span>
+<strong class="tit_cont">뮤지컬 〈두 도시 이야기〉</strong>
+<span class="day">2026.11.11 - 2027.02.08</span>
+<span class="location">광림아트센터 BBCH홀</span>
+<span class="thumb">
+<img alt="3 1 단계 하락 뮤지컬 〈두 도시 이야기〉 2026.11.11 - 2027.02.08 광림아트센터 BBCH홀" loading="lazy" src="assets/80-5-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+</ol>
+</div>
+</li>
+<li class="nth3">
+<h2 class="tit"><a data-action-label="전시/클래식/기타" href="#">전시/클래식/기타</a></h2>
+<div class="box_cont">
+<ol class="list_ranking">
+<li class="nth1">
+<a class="item" data-action-label="1 - 순위유지 Anime X Game Festival 2026 1일권(토요일) 2026.12.05 일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀" href="#">
+<span class="inner">
+<span class="ranking">1</span>
+<span class="change">-<span class="screen_out">순위유지</span></span>
+<strong class="tit_cont">Anime X Game Festival 2026 1일권(토요일)</strong>
+<span class="day">2026.12.05 </span>
+<span class="location">일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀</span>
+<span class="thumb">
+<img alt="1 - 순위유지 Anime X Game Festival 2026 1일권(토요일) 2026.12.05 일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀" loading="lazy" src="assets/80-6-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+<li class="nth2">
+<a class="item" data-action-label="2 1 단계 상승 Anime X Game Festival 2026 1일권(금요일) 2026.12.04 일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀" href="#">
+<span class="inner">
+<span class="ranking">2</span>
+<span class="change"><span class="ico_change ico_up">1</span><span class="screen_out">단계 상승</span></span>
+<strong class="tit_cont">Anime X Game Festival 2026 1일권(금요일)</strong>
+<span class="day">2026.12.04 </span>
+<span class="location">일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀</span>
+<span class="thumb">
+<img alt="2 1 단계 상승 Anime X Game Festival 2026 1일권(금요일) 2026.12.04 일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀" loading="lazy" src="assets/80-7-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+<li class="nth3">
+<a class="item" data-action-label="3 1 단계 하락 Anime X Game Festival 2026 1일권(일요일) 2026.12.06 일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀" href="#">
+<span class="inner">
+<span class="ranking">3</span>
+<span class="change"><span class="ico_change ico_down">1</span><span class="screen_out">단계 하락</span></span>
+<strong class="tit_cont">Anime X Game Festival 2026 1일권(일요일)</strong>
+<span class="day">2026.12.06 </span>
+<span class="location">일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀</span>
+<span class="thumb">
+<img alt="3 1 단계 하락 Anime X Game Festival 2026 1일권(일요일) 2026.12.06 일산 킨텍스(KINTEX) 제 1전시장 1/2/3/4/5홀" loading="lazy" src="assets/80-8-.jpg"/>
+<span class="frame"></span>
+</span>
+</span>
+</a>
+</li>
+</ol>
+</div>
+</li>
+</ul>
+</div>
+<div class="ctr"><a class="ico_more" data-action-label="더보기" href="#">더보기</a></div>
+</div>
+</div>
+<div class="wrap_main_concert">
+<h2 class="tit_main_concert">윈트티켓 PICK! 추천공연</h2>
+<ul class="list_main_concert" id="perf_poster">
+<li class="first">
+<a class="inner" data-action-label="〈표기식 사진전: 빛은 어떻게 떨어졌길래 모두 다르게 반짝여서〉 2026.09.23 - 2027.03.01 그라운드시소 센트럴" href="#">
+<span class="thumb">
+<img alt="〈표기식 사진전: 빛은 어떻게 떨어졌길래 모두 다르게 반짝여서〉 2026.09.23 - 2027.03.01 그라운드시소 센트럴" loading="lazy" src="assets/optimize-28-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">〈표기식 사진전: 빛은 어떻게 떨어졌길래 모두 다르게 반짝여서〉</strong> <span class="day">2026.09.23 - 2027.03.01</span>
+<span class="location">그라운드시소 센트럴 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="2026 히어로 락 페스티벌 - 인천 2026.12.18 - 2026.12.20 송도컨벤시아" href="#">
+<span class="thumb">
+<img alt="2026 히어로 락 페스티벌 - 인천 2026.12.18 - 2026.12.20 송도컨벤시아" loading="lazy" src="assets/optimize-29-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">2026 히어로 락 페스티벌 - 인천</strong> <span class="day">2026.12.18 - 2026.12.20</span>
+<span class="location">송도컨벤시아 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="PARK JINYOUNG 1ST CONCERT TOUR [CODE#] IN SEOUL 2026.11.07 - 2026.11.08 장충체육관" href="#">
+<span class="thumb">
+<img alt="PARK JINYOUNG 1ST CONCERT TOUR [CODE#] IN SEOUL 2026.11.07 - 2026.11.08 장충체육관" loading="lazy" src="assets/optimize-30-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">PARK JINYOUNG 1ST CONCERT TOUR [CODE#] IN SEOUL</strong> <span class="day">2026.11.07 - 2026.11.08</span>
+<span class="location">장충체육관 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="SJF at the Theater 2026 - Christopher 2026.11.19 - 2026.11.20 세종문화회관 대극장" href="#">
+<span class="thumb">
+<img alt="SJF at the Theater 2026 - Christopher 2026.11.19 - 2026.11.20 세종문화회관 대극장" loading="lazy" src="assets/optimize-31-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">SJF at the Theater 2026 - Christopher</strong> <span class="day">2026.11.19 - 2026.11.20</span>
+<span class="location">세종문화회관 대극장</span>
+<span class="stat"></span>
+</a>
+</li>
+<li class="first">
+<a class="inner" data-action-label="#1 EXEX BEGINS 2026.11.07 - 2026.11.07 LDK 한남" href="#">
+<span class="thumb">
+<img alt="#1 EXEX BEGINS 2026.11.07 - 2026.11.07 LDK 한남" loading="lazy" src="assets/optimize-32-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">#1 EXEX BEGINS</strong> <span class="day">2026.11.07 - 2026.11.07</span>
+<span class="location">LDK 한남 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="연극 〈에너미〉 2026.10.26 - 2026.11.14 세종문화회관 M씨어터" href="#">
+<span class="thumb">
+<img alt="연극 〈에너미〉 2026.10.26 - 2026.11.14 세종문화회관 M씨어터" loading="lazy" src="assets/optimize-23-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">연극 〈에너미〉</strong> <span class="day">2026.10.26 - 2026.11.14</span>
+<span class="location">세종문화회관 M씨어터</span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="2027 에픽하이 콘서트 2027.01.22 - 2027.01.24 KSPO DOME" href="#">
+<span class="thumb">
+<img alt="2027 에픽하이 콘서트 2027.01.22 - 2027.01.24 KSPO DOME" loading="lazy" src="assets/optimize-33-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">2027 에픽하이 콘서트</strong> <span class="day">2027.01.22 - 2027.01.24</span>
+<span class="location">KSPO DOME </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="[티켓] 명탐정 코난전 -TV 애니메이션 방송 30주년 기념- 2026.08.12 - 2026.11.29 AK PLAZA HONGDAE 4F 오뮤지엄" href="#">
+<span class="thumb">
+<img alt="[티켓] 명탐정 코난전 -TV 애니메이션 방송 30주년 기념- 2026.08.12 - 2026.11.29 AK PLAZA HONGDAE 4F 오뮤지엄" loading="lazy" src="assets/optimize-34-.png"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">[티켓] 명탐정 코난전 -TV 애니메이션 방송 30주년 기념-</strong> <span class="day">2026.08.12 - 2026.11.29</span>
+<span class="location">AK PLAZA HONGDAE 4F 오뮤지엄 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li class="first">
+<a class="inner" data-action-label="뮤지컬 〈헬스키친〉 (Musical Hell’s Kitchen) 2026.07.24 - 2026.11.08 GS아트센터" href="#">
+<span class="thumb">
+<img alt="뮤지컬 〈헬스키친〉 (Musical Hell’s Kitchen) 2026.07.24 - 2026.11.08 GS아트센터" loading="lazy" src="assets/optimize-35-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">뮤지컬 〈헬스키친〉 (Musical Hell’s Kitchen)</strong> <span class="day">2026.07.24 - 2026.11.08</span>
+<span class="location">GS아트센터 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="SJF at the Theater 2026 - Diana Krall 2026.11.22 - 2026.11.22 세종문화회관 대극장" href="#">
+<span class="thumb">
+<img alt="SJF at the Theater 2026 - Diana Krall 2026.11.22 - 2026.11.22 세종문화회관 대극장" loading="lazy" src="assets/optimize-15-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">SJF at the Theater 2026 - Diana Krall</strong> <span class="day">2026.11.22 - 2026.11.22</span>
+<span class="location">세종문화회관 대극장</span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="[상시관람] 진격의 거인展 FINAL 2026.06.22 - 2026.11.01 덕스(DUEX) 홍대 1관" href="#">
+<span class="thumb">
+<img alt="[상시관람] 진격의 거인展 FINAL 2026.06.22 - 2026.11.01 덕스(DUEX) 홍대 1관" loading="lazy" src="assets/optimize-36-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">[상시관람] 진격의 거인展 FINAL</strong> <span class="day">2026.06.22 - 2026.11.01</span>
+<span class="location">덕스(DUEX) 홍대 1관 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="WONDERLIVET 2026 (원더리벳 2026) 2026.11.20 - 2026.11.22 KINTEX HALL 7/8/9/10" href="#">
+<span class="thumb">
+<img alt="WONDERLIVET 2026 (원더리벳 2026) 2026.11.20 - 2026.11.22 KINTEX HALL 7/8/9/10" loading="lazy" src="assets/optimize-37-.png"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">WONDERLIVET 2026 (원더리벳 2026)</strong> <span class="day">2026.11.20 - 2026.11.22</span>
+<span class="location">KINTEX HALL 7/8/9/10 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li class="first">
+<a class="inner" data-action-label="2026 체리블라썸뮤직콘서트 인 윈터 2026.11.21 - 2026.11.21 창원컨벤션센터(CECO) 2,3전시장" href="#">
+<span class="thumb">
+<img alt="2026 체리블라썸뮤직콘서트 인 윈터 2026.11.21 - 2026.11.21 창원컨벤션센터(CECO) 2,3전시장" loading="lazy" src="assets/optimize-38-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">2026 체리블라썸뮤직콘서트 인 윈터</strong> <span class="day">2026.11.21 - 2026.11.21</span>
+<span class="location">창원컨벤션센터(CECO) 2,3전시장</span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="TWLV x nnn : ‘GOOD FRIENDS’ 2026.11.13 - 2026.11.13 롤링홀" href="#">
+<span class="thumb">
+<img alt="TWLV x nnn : ‘GOOD FRIENDS’ 2026.11.13 - 2026.11.13 롤링홀" loading="lazy" src="assets/optimize-39-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">TWLV x nnn : ‘GOOD FRIENDS’</strong> <span class="day">2026.11.13 - 2026.11.13</span>
+<span class="location">롤링홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="퓨처피어클럽 EP발매 기념 단독 콘서트 : No FPC No LlFE 2026.11.12 - 2026.11.12 롤링홀" href="#">
+<span class="thumb">
+<img alt="퓨처피어클럽 EP발매 기념 단독 콘서트 : No FPC No LlFE 2026.11.12 - 2026.11.12 롤링홀" loading="lazy" src="assets/optimize-40-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">퓨처피어클럽 EP발매 기념 단독 콘서트 : No FPC No LlFE</strong> <span class="day">2026.11.12 - 2026.11.12</span>
+<span class="location">롤링홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="강지원 단독 콘서트 ‘but be odd now?’ 2026.11.06 - 2026.11.06 롤링홀" href="#">
+<span class="thumb">
+<img alt="강지원 단독 콘서트 ‘but be odd now?’ 2026.11.06 - 2026.11.06 롤링홀" loading="lazy" src="assets/optimize-41-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">강지원 단독 콘서트 ‘but be odd now?’</strong> <span class="day">2026.11.06 - 2026.11.06</span>
+<span class="location">롤링홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li class="first">
+<a class="inner" data-action-label="Born to be [     ] 2026.10.23 - 2026.10.23 롤링홀" href="#">
+<span class="thumb">
+<img alt="Born to be [     ] 2026.10.23 - 2026.10.23 롤링홀" loading="lazy" src="assets/optimize-42-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">Born to be [     ]</strong> <span class="day">2026.10.23 - 2026.10.23</span>
+<span class="location">롤링홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="감귤서리단 X WEDNESDAY OFF : ‘Sunset Orange’ 2026.10.30 - 2026.10.30 롤링홀" href="#">
+<span class="thumb">
+<img alt="감귤서리단 X WEDNESDAY OFF : ‘Sunset Orange’ 2026.10.30 - 2026.10.30 롤링홀" loading="lazy" src="assets/optimize-43-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">감귤서리단 X WEDNESDAY OFF : ‘Sunset Orange’</strong> <span class="day">2026.10.30 - 2026.10.30</span>
+<span class="location">롤링홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="METHOD : 20YEARS ANNIVERSARY 2026.10.25 - 2026.10.25 롤링홀" href="#">
+<span class="thumb">
+<img alt="METHOD : 20YEARS ANNIVERSARY 2026.10.25 - 2026.10.25 롤링홀" loading="lazy" src="assets/optimize-44-.png"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">METHOD : 20YEARS ANNIVERSARY</strong> <span class="day">2026.10.25 - 2026.10.25</span>
+<span class="location">롤링홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="CUTIE STREET Live in Korea 2027 WINTER 2027.01.23 - 2027.01.23 일산 킨텍스(KINTEX) HALL 9A" href="#">
+<span class="thumb">
+<img alt="CUTIE STREET Live in Korea 2027 WINTER 2027.01.23 - 2027.01.23 일산 킨텍스(KINTEX) HALL 9A" loading="lazy" src="assets/optimize-13-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">CUTIE STREET Live in Korea 2027 WINTER</strong> <span class="day">2027.01.23 - 2027.01.23</span>
+<span class="location">일산 킨텍스(KINTEX) HALL 9A</span>
+<span class="stat"></span>
+</a>
+</li>
+<li class="first">
+<a class="inner" data-action-label="울트라백화점 부산 : 텍스트 쇼핑 클럽 2026.07.17 - 2026.11.01 P.ARK 2-3F" href="#">
+<span class="thumb">
+<img alt="울트라백화점 부산 : 텍스트 쇼핑 클럽 2026.07.17 - 2026.11.01 P.ARK 2-3F" loading="lazy" src="assets/optimize-45-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">울트라백화점 부산 : 텍스트 쇼핑 클럽</strong> <span class="day">2026.07.17 - 2026.11.01</span>
+<span class="location">P.ARK 2-3F </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="브래드 월스 사진전 2026.09.11 - 2027.03.01 그라운드시소 용산" href="#">
+<span class="thumb">
+<img alt="브래드 월스 사진전 2026.09.11 - 2027.03.01 그라운드시소 용산" loading="lazy" src="assets/optimize-46-.jpg"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">브래드 월스 사진전</strong> <span class="day">2026.09.11 - 2027.03.01</span>
+<span class="location">그라운드시소 용산 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="DAZBEE ORCHESTRA CONCERT : SYMPHONIA 2026.10.31 - 2026.10.31 롯데콘서트홀" href="#">
+<span class="thumb">
+<img alt="DAZBEE ORCHESTRA CONCERT : SYMPHONIA 2026.10.31 - 2026.10.31 롯데콘서트홀" loading="lazy" src="assets/optimize-47-.png"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">DAZBEE ORCHESTRA CONCERT : SYMPHONIA</strong> <span class="day">2026.10.31 - 2026.10.31</span>
+<span class="location">롯데콘서트홀 </span>
+<span class="stat"></span>
+</a>
+</li>
+<li>
+<a class="inner" data-action-label="홈커밍스 내한 공연 “You are you, even if no one fill in about you.” 2026.12.13 - 2026.12.13 무신사 개러지" href="#">
+<span class="thumb">
+<img alt="홈커밍스 내한 공연 “You are you, even if no one fill in about you.” 2026.12.13 - 2026.12.13 무신사 개러지" loading="lazy" src="assets/optimize-14-.png"/>
+<span class="frame"></span>
+</span>
+<strong class="tit">홈커밍스 내한 공연 “You are you, even if no one fill in about you.”</strong> <span class="day">2026.12.13 - 2026.12.13</span>
+<span class="location">무신사 개러지 </span>
+<span class="stat"></span>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+<div class="rightWingBanner">
+<ul>
+<li>
+<a data-action-label="공연 안내" href="#">
+<img alt="rightWingbanner1" loading="lazy" src="assets/202610071658259855bbf9-2710-4883-a43d-672577237168.png"/></a>
+</li>
+<li>
+<a data-action-label="공연 안내" href="#">
+<img alt="rightWingbanner1" loading="lazy" src="assets/20261007163309fd6ad6d9-47d3-4fec-8986-dde4972fea97.png"/></a>
+</li>
+</ul>
+</div>
+<div class="my_fold" style="width: 1008px;margin: 0 auto;">
+<div class="footer_notice">
+<strong>공지사항</strong>
+<ul>
+<li>
+<p class="n_txt">
+<a data-action-label="윈트티켓 오픈 안내" href="#">윈트티켓에 오신 것을 환영합니다.</a>
+<span class="date">2026.10.23</span>
+</p>
+</li>
+</ul>
+</div>
+</div>
+<div class="mainlayerPop mainlayerNew" id="mainPop" style="top: 165px; left: 50%; margin-left: -264px; width: 528px; display: none;">
+<div class="la_header">
+<div class="la_header1"></div>
+</div>
+<div class="la_middle">
+<div class="la_middle1">
+<div class="la_con">
+<ul class="planEvent">
+<li class="">
+<a data-action-label="공연 안내" href="#">
+<img alt="" height="316" loading="lazy" src="assets/50.jpg" width="236"/>
+</a>
+</li>
+<li class="lst">
+<a data-action-label="공연 안내" href="#">
+<img alt="" height="316" loading="lazy" src="assets/50-1-.jpg" width="236"/>
+</a>
+</li>
+<li class="">
+<a data-action-label="공연 안내" href="#">
+<img alt="" height="316" loading="lazy" src="assets/50-2-.png" width="236"/>
+</a>
+</li>
+<li class="lst">
+<a data-action-label="공연 안내" href="#">
+<img alt="" height="316" loading="lazy" src="assets/50-3-.png" width="236"/>
+</a>
+</li>
+</ul>
+</div>
+<div class="popClose">
+<ul class="closeChk">
+<li>
+<input id="popup_chk" name="popup_chk" type="checkbox"/>
+<label for="popup_chk">오늘 하루 이 창을 열지 않음</label>
+</li>
+<li class="lst"><a class="btn_layerpopup_close" data-action-label="레이어팝업닫기" href="#" id="btn_layerpopup_close">레이어팝업닫기</a></li>
+</ul>
+</div>
+</div>
+</div>
+<div class="la_footer"><div class="la_footer1"></div></div>
+</div>
+<div class="my_fold" id="footer"><div class="footer_quick_link"><div class="l_box"><a class="footer-brand" href="/"><img alt="윈트티켓" src="assets/logo.svg"/></a></div><div class="r_box"><a data-action-label="예매가이드" href="#">예매가이드</a><a data-action-label="티켓판매제휴" href="#">티켓판매제휴</a><a data-action-label="고객센터" href="#">고객센터</a></div></div><div class="inner_footer"><ul class="clear_g"><li class="first_child"><a data-action-label="회사소개" href="#">회사소개</a></li><li><a data-action-label="이용약관" href="#">이용약관</a></li><li><a data-action-label="개인정보처리방침" href="#"><strong>개인정보처리방침</strong></a></li><li><a data-action-label="청소년보호정책" href="#">청소년보호정책</a></li><li><a data-action-label="파트너센터" href="#">파트너센터</a></li></ul><p><strong>윈트티켓</strong><br/>공연의 설렘이 시작되는 곳<br/>현재 메인 페이지 시안이며, 예매·결제 서비스는 준비 중입니다.<br/>© WINTICKET. All rights reserved.</p></div></div>
+</div>
+<dialog aria-labelledby="dialog-title" id="site-dialog"><button aria-label="닫기" class="dialog-close">×</button><h2 id="dialog-title"></h2><div id="dialog-body"></div></dialog><script defer="True" src="assets/winticket.js"></script></body><whale-quicksearch style="visibility: visible;" translate="no"><template shadowrootmode="closed"><style></style><div class="anchor" style="top: 4331px !important; left: 533px !important;"></div><div class="quicksearch forward" data-version="4f5cfe6e9" style="--anchor-top: 4331px; --anchor-left: 533px;"></div></template></whale-quicksearch></html>
