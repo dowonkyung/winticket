@@ -15,11 +15,18 @@ alter table public.wt_login_limits enable row level security;
 revoke all on public.wt_admins,public.wt_sessions,public.wt_shows,public.wt_reservations,public.wt_login_limits from anon,authenticated;
 grant all on public.wt_admins,public.wt_sessions,public.wt_shows,public.wt_reservations,public.wt_login_limits to service_role;
 
+create table public.wt_reserved_seats(reservation_id text not null references public.wt_reservations(id) on delete cascade,show_id text not null references public.wt_shows(id),session_id text not null,seat_id text not null,grade_id text not null,active boolean not null default true,primary key(reservation_id,seat_id));
+create unique index wt_seat_exclusivity on public.wt_reserved_seats(show_id,session_id,seat_id) where active;
+create index wt_seat_grades on public.wt_reserved_seats(show_id,session_id,grade_id) where active;
+alter table public.wt_reserved_seats enable row level security;
+revoke all on public.wt_reserved_seats from anon,authenticated;
+grant all on public.wt_reserved_seats to service_role;
+
 create or replace function public.wt_gateway(p_route text,p_method text,p_token text,p_new_token text,p_body jsonb,p_ip text)
 returns jsonb language plpgsql security invoker set search_path='' as $$
 declare
  s public.wt_sessions%rowtype; sh public.wt_shows%rowtype; r public.wt_reservations%rowtype;
- v jsonb; result jsonb; availability jsonb; a jsonb; g jsonb; se jsonb; oldse jsonb; held bigint; qty integer; rid text; sid text; gid text; n integer; lim integer;
+ v jsonb; chosen_seats jsonb; booked jsonb; selected_ids jsonb; total_amount integer; result jsonb; availability jsonb; a jsonb; g jsonb; se jsonb; oldse jsonb; held bigint; qty integer; rid text; sid text; gid text; n integer; lim integer;
 begin
  select * into s from public.wt_sessions where token_hash=p_token and expires>now();
  if p_route='/api/session' and p_method='GET' then
@@ -30,7 +37,7 @@ begin
   return jsonb_build_object('admin',s.admin,'adminConfigured',exists(select 1 from public.wt_admins),'newSession',p_token is distinct from s.token_hash);
  end if;
  if p_route='/api/shows' and p_method='GET' then
-  return jsonb_build_object('shows',coalesce((select jsonb_agg(data||jsonb_build_object('version',version) order by created desc,id) from public.wt_shows where (data->>'published')::boolean),'[]'::jsonb));
+  return jsonb_build_object('shows',coalesce((select jsonb_agg((data-'seatMap')||jsonb_build_object('hasSeatMap',data->'seatMap' is not null and data->'seatMap'<>'null'::jsonb,'version',version) order by created desc,id) from public.wt_shows where (data->>'published')::boolean),'[]'::jsonb));
  end if;
  if p_route ~ '^/api/shows/[a-zA-Z0-9_-]+$' and p_method='GET' then
   select * into sh from public.wt_shows where id=split_part(p_route,'/',4);
@@ -40,11 +47,13 @@ begin
    a='{}';
    for g in select value from jsonb_array_elements(sh.data->'grades') loop
     select coalesce(sum(quantity),0) into held from public.wt_reservations where show_id=sh.id and session_id=se->>'id' and grade_id=g->>'id' and status='requested';
+    select held+count(*) into held from public.wt_reserved_seats where show_id=sh.id and session_id=se->>'id' and grade_id=g->>'id' and active;
     a=a||jsonb_build_object(g->>'id',(g->>'capacity')::integer-held);
    end loop;
    availability=availability||jsonb_build_object(se->>'id',a);
   end loop;
-  return jsonb_build_object('show',sh.data||jsonb_build_object('version',sh.version),'availability',availability);
+  select coalesce(jsonb_object_agg(x.session_id,x.seats),'{}'::jsonb) into booked from (select session_id,jsonb_agg(seat_id) as seats from public.wt_reserved_seats where show_id=sh.id and active group by session_id) x;
+  return jsonb_build_object('show',sh.data||jsonb_build_object('version',sh.version),'availability',availability,'occupied',booked);
  end if;
  if s.token_hash is null then return jsonb_build_object('error','세션이 만료되었습니다. 새로고침해 주세요.','status',401); end if;
  if p_route='/api/admin/login' and p_method='POST' then
@@ -81,11 +90,12 @@ begin
   select * into sh from public.wt_shows where id=split_part(p_route,'/',5) for update;
   if sh.id is null then return jsonb_build_object('error','공연을 찾을 수 없습니다.','status',404); end if;
   if sh.version<>(p_body->>'version')::integer then return jsonb_build_object('error','다른 창에서 수정되었습니다. 최신 정보를 불러와 주세요.','status',409); end if;
+  if coalesce(sh.data->'seatMap','null'::jsonb) is distinct from coalesce(p_body->'seatMap','null'::jsonb) and exists(select 1 from public.wt_reservations where show_id=sh.id and status='requested') then return jsonb_build_object('error','신청이 남아 있는 공연의 좌석도·배치는 변경할 수 없습니다. 먼저 기존 신청을 처리해 주세요.','status',409); end if;
   for result in select jsonb_build_object('sid',session_id,'gid',grade_id,'n',sum(quantity)) from public.wt_reservations where show_id=sh.id and status='requested' group by session_id,grade_id loop
    select value into se from jsonb_array_elements(p_body->'sessions') where value->>'id'=result->>'sid';
    select value into oldse from jsonb_array_elements(sh.data->'sessions') where value->>'id'=result->>'sid';
    select value into g from jsonb_array_elements(p_body->'grades') where value->>'id'=result->>'gid';
-   if se is null or g is null or (g->>'capacity')::integer<(result->>'n')::integer or se->>'date'<>oldse->>'date' or se->>'time'<>oldse->>'time' then return jsonb_build_object('error','신청이 있는 회차·등급을 삭제하거나 일정을 변경할 수 없으며 수량을 신청 수보다 줄일 수 없습니다.','status',409); end if;
+   if se is null or (result->>'gid'<>'__assigned__' and (g is null or (g->>'capacity')::integer<(result->>'n')::integer)) or se->>'date'<>oldse->>'date' or se->>'time'<>oldse->>'time' then return jsonb_build_object('error','신청이 있는 회차·등급을 삭제하거나 일정을 변경할 수 없으며 수량을 신청 수보다 줄일 수 없습니다.','status',409); end if;
   end loop;
   v=p_body-'version';
   if sh.data ? 'legacyPoster' then v=v||jsonb_build_object('legacyPoster',sh.data->'legacyPoster'); end if;
@@ -95,14 +105,30 @@ begin
  if p_route='/api/reservations' and p_method='POST' then
   select * into sh from public.wt_shows where id=p_body->>'showId' for update;
   if sh.id is null then return jsonb_build_object('error','공연을 찾을 수 없습니다.','status',404); end if;
-  qty=(p_body->>'quantity')::integer; sid=p_body->>'sessionId'; gid=p_body->>'gradeId';
+  selected_ids=p_body->'seatIds';
+  qty=case when sh.data->'seatMap' is not null and sh.data->'seatMap'<>'null'::jsonb then case when jsonb_typeof(selected_ids)='array' then jsonb_array_length(selected_ids) else 0 end else (p_body->>'quantity')::integer end; sid=p_body->>'sessionId'; gid=p_body->>'gradeId';
   select value into se from jsonb_array_elements(sh.data->'sessions') where value->>'id'=sid;
   select value into g from jsonb_array_elements(sh.data->'grades') where value->>'id'=gid;
-  if not (sh.data->>'published')::boolean or se is null or g is null or qty is null or qty<1 or qty>(sh.data->>'maxTickets')::integer then return jsonb_build_object('error','공연·회차·수량을 확인해 주세요.','status',400); end if;
+  if not (sh.data->>'published')::boolean or se is null or ((sh.data->'seatMap' is null or sh.data->'seatMap'='null'::jsonb) and g is null) or qty is null or qty<1 or qty>(sh.data->>'maxTickets')::integer then return jsonb_build_object('error','공연·회차·수량을 확인해 주세요.','status',400); end if;
   if nullif(sh.data->>'salesStart','') is not null and ((sh.data->>'salesStart')::timestamp at time zone 'Asia/Seoul')>now() then return jsonb_build_object('error','아직 예매 오픈 전입니다.','status',409); end if;
   if ((se->>'date'||'T'||(se->>'time'))::timestamp at time zone 'Asia/Seoul')<=now() then return jsonb_build_object('error','이미 시작된 공연 회차입니다.','status',409); end if;
   select coalesce(sum(quantity),0) into held from public.wt_reservations where owner=s.owner and show_id=sh.id and session_id=sid and status='requested';
   if held+qty>(sh.data->>'maxTickets')::integer then return jsonb_build_object('error','회차당 최대 신청 매수를 초과했습니다.','status',409); end if;
+  if sh.data->'seatMap' is not null and sh.data->'seatMap'<>'null'::jsonb then
+   if (select count(distinct value) from jsonb_array_elements_text(selected_ids))<>qty then return jsonb_build_object('error','중복된 좌석을 선택할 수 없습니다.','status',400); end if;
+   select coalesce(jsonb_agg(jsonb_build_object('id',st.value->>'id','zoneName',z.value->>'name','row',(st.value->>'row')::integer,'number',st.value->>'number','gradeId',gr.value->>'id','grade',gr.value->>'name','unitPrice',(gr.value->>'price')::integer)),'[]'::jsonb),coalesce(sum((gr.value->>'price')::integer),0) into chosen_seats,total_amount
+   from jsonb_array_elements(sh.data->'seatMap'->'zones') z
+   cross join lateral jsonb_array_elements(z.value->'seats') st
+   join lateral jsonb_array_elements(sh.data->'grades') gr on gr.value->>'id'=st.value->>'gradeId'
+   where selected_ids ? (st.value->>'id') and not (st.value->>'blocked')::boolean;
+   if jsonb_array_length(chosen_seats)<>qty then return jsonb_build_object('error','선택한 좌석이 변경되었거나 판매 제외 좌석입니다. 새로고침해 주세요.','status',409); end if;
+   if exists(select 1 from public.wt_reserved_seats where show_id=sh.id and session_id=sid and active and selected_ids ? seat_id) then return jsonb_build_object('error','다른 방문자가 먼저 신청한 좌석이 있습니다. 새로고침해 다시 선택해 주세요.','status',409); end if;
+   rid='WT-'||upper(replace(gen_random_uuid()::text,'-',''));
+   v=jsonb_build_object('title',sh.data->'title','poster',sh.data->'poster','venue',sh.data->'venue','date',se->'date','time',se->'time','grade','지정좌석','seats',chosen_seats);
+   insert into public.wt_reservations(id,owner,show_id,session_id,grade_id,quantity,amount,status,snapshot) values(rid,s.owner,sh.id,sid,'__assigned__',qty,total_amount,'requested',v) returning * into r;
+   insert into public.wt_reserved_seats(reservation_id,show_id,session_id,seat_id,grade_id) select rid,sh.id,sid,value->>'id',value->>'gradeId' from jsonb_array_elements(chosen_seats);
+   return jsonb_build_object('reservation',jsonb_build_object('id',r.id,'quantity',r.quantity,'amount',r.amount,'status',r.status,'snapshot',r.snapshot),'message','선택한 좌석의 예매 신청이 저장되었습니다. 결제 및 발권은 진행되지 않았습니다.');
+  end if;
   select coalesce(sum(quantity),0) into held from public.wt_reservations where show_id=sh.id and session_id=sid and grade_id=gid and status='requested';
   if held+qty>(g->>'capacity')::integer then return jsonb_build_object('error','잔여 수량이 부족합니다.','status',409); end if;
   rid='WT-'||upper(replace(gen_random_uuid()::text,'-',''));
@@ -115,6 +141,7 @@ begin
   if r.id is null or (r.owner<>s.owner and s.admin is null) then return jsonb_build_object('error','신청 내역을 찾을 수 없습니다.','status',404); end if;
   if r.status<>'requested' then return jsonb_build_object('error','이미 취소된 신청입니다.','status',409); end if;
   update public.wt_reservations set status='cancelled' where id=r.id;
+  update public.wt_reserved_seats set active=false where reservation_id=r.id;
   return jsonb_build_object('ok',true);
  end if;
  return jsonb_build_object('error','요청 경로를 찾을 수 없습니다.','status',404);

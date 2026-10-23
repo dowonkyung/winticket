@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 450">
+ <rect x="125" y="30" width="350" height="55" fill="#ddd"/><text x="300" y="65" text-anchor="middle" font-family="sans-serif" font-size="20" fill="#777">STAGE</text>
+ <g fill="#ccc" stroke="#fff" stroke-width="7"><path id="zone-A" d="M45 170L155 105H185V255H45Z"/><path id="zone-B" d="M185 105H265V155H235V255H185Z"/><path id="zone-C" d="M335 105H415V255H365V155H335Z"/><path id="zone-D" d="M415 105H445L555 170V255H415Z"/><rect id="zone-X" x="45" y="260" width="140" height="145"/><rect id="zone-Y" x="185" y="260" width="230" height="145"/><rect id="zone-Z" x="415" y="260" width="140" height="145"/></g>
+ <g font-family="sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle"><text x="120" y="205">A</text><text x="210" y="205">B</text><text x="390" y="205">C</text><text x="480" y="205">D</text><text x="115" y="345">X</text><text x="300" y="345">Y</text><text x="485" y="345">Z</text></g>
+</svg>

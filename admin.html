@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://ahchwkcszyphbmppctbt.supabase.co; connect-src 'self' https://ahchwkcszyphbmppctbt.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>공연 관리 | 윈트티켓</title><link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/admin.css?v=supabase-1"></head>
+<html lang="ko"><head><meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://ahchwkcszyphbmppctbt.supabase.co; connect-src 'self' https://ahchwkcszyphbmppctbt.supabase.co; base-uri 'self'; form-action 'self'; object-src 'none'"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>공연 관리 | 윈트티켓</title><link rel="icon" href="assets/logo.svg"><link rel="stylesheet" href="assets/admin.css?v=seats-1"></head>
 <body>
 <header class="admin-header"><a href="index.html"><img src="assets/logo.svg" alt="윈트티켓"></a><span>공연 관리</span><nav><a href="index.html">사이트 보기 ↗</a><button id="logout" hidden>로그아웃</button></nav></header>
 <main>
@@ -25,12 +25,12 @@
      <div><label for="detail-upload">상세 안내 이미지</label><input id="detail-upload" type="file" accept="image/png,image/jpeg,image/webp"><input name="detailImage" type="hidden"><img id="detail-preview" class="upload-preview" alt="상세 이미지 미리보기" hidden><button id="remove-detail" type="button" class="text-button">상세 이미지 비우기</button></div>
     </div></section>
     <section class="form-section"><div class="section-heading"><h3>공연 회차</h3><button type="button" id="add-session" class="secondary small">＋ 회차 추가</button></div><p class="hint">날짜와 시간은 한국시간입니다. 신청이 있는 회차는 일정을 변경하거나 삭제할 수 없습니다.</p><div id="sessions-editor"></div></section>
-    <section class="form-section"><div class="section-heading"><h3>좌석등급·가격·수량</h3><button type="button" id="add-grade" class="secondary small">＋ 좌석등급 추가</button></div><p class="hint">수량은 회차별 판매 가능 수량입니다. 지정 좌석 배정은 제공하지 않습니다.</p><div class="grade-head"><span>등급 이름</span><span>가격(원)</span><span>수량(매)</span><span>색상</span><span></span></div><div id="grades-editor"></div></section>
-    <section class="form-section"><h3>상세 내용</h3><label>작품설명<textarea name="description" rows="7" maxlength="20000" placeholder="공연 소개를 입력해 주세요"></textarea></label><label>예매 공지사항<textarea name="notice" rows="6" maxlength="20000" placeholder="관람 및 예매 유의사항"></textarea></label></section>
+    <section class="form-section"><div class="section-heading"><h3>좌석등급·가격·수량</h3><button type="button" id="add-grade" class="secondary small">＋ 좌석등급 추가</button></div><p class="hint">좌석도 미등록 공연은 회차별 판매 수량을 입력합니다. 지정좌석 공연의 수량은 아래 좌석 배치에서 자동 계산됩니다.</p><div class="grade-head"><span>등급 이름</span><span>가격(원)</span><span>수량(매)</span><span>색상</span><span></span></div><div id="grades-editor"></div></section>
+    <section class="form-section" id="assigned-seat-editor"></section><section class="form-section"><h3>상세 내용</h3><label>작품설명<textarea name="description" rows="7" maxlength="20000" placeholder="공연 소개를 입력해 주세요"></textarea></label><label>예매 공지사항<textarea name="notice" rows="6" maxlength="20000" placeholder="관람 및 예매 유의사항"></textarea></label></section>
     <section class="form-section"><h3>공개·예매 설정</h3><div class="fields"><label>일반예매 오픈 (한국시간)<input name="salesStart" type="datetime-local"><small>비워두면 저장 후 바로 신청할 수 있습니다.</small></label><label>회차당 최대 신청 매수<input name="maxTickets" type="number" required min="1" max="10" value="2"></label></div><div class="check-options"><label><input name="exclusive" type="checkbox"> 단독판매 표시</label><label><input name="published" type="checkbox"> 사이트에 공개</label></div><p class="hint">공개하면 메인 목록과 검색에 표시됩니다. 비공개로 바꾸면 새 신청이 중단되며 기존 내역은 보존됩니다.</p></section>
     <div class="save-bar"><span id="save-state">저장하면 서버에 반영됩니다.</span><button type="submit" id="save-show" class="primary">공연 저장</button></div>
    </form>
   </div>
   <section id="reservations-view" hidden><h2>예매 신청 내역</h2><p class="hint">결제·발권이 진행되지 않은 신청 내역입니다. 최근 1,000건을 표시합니다.</p><div id="admin-reservations"></div></section>
  </section>
-</main><script type="module" src="assets/admin.js?v=supabase-1"></script></body></html>
+</main><script type="module" src="assets/admin.js?v=seats-1"></script></body></html>

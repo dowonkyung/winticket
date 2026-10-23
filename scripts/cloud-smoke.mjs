@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 const base='https://ahchwkcszyphbmppctbt.supabase.co/functions/v1/winticket-api';
 const credential=fs.readFileSync(process.env.WINTICKET_TEST_CREDENTIALS,'utf8');
+const credentialUsername=process.env.WINTICKET_TEST_USERNAME||'wintadmin';
 const password=credential.match(/초기 비밀번호: (.+)/)[1];
 const tokens=new Map();
 async function call(who,path,method='GET',body,expected=200){
@@ -13,8 +14,8 @@ async function call(who,path,method='GET',body,expected=200){
  assert.equal(r.status,expected,JSON.stringify(v));if(v.token)tokens.set(who,v.token);return v;
 }
 await call('admin','/api/session');
-await call('admin','/api/admin/login','POST',{username:'wintadmin',password});
-assert.equal((await call('admin','/api/session')).admin,'wintadmin');
+await call('admin','/api/admin/login','POST',{username:credentialUsername,password});
+assert.equal((await call('admin','/api/session')).admin,credentialUsername);
 await call('x','/api/admin/shows','GET',undefined,401);
 const show={title:'[배포 검증] 자동 테스트 공연',category:'콘서트',poster:'assets/nct-wish-poster.jpg',venue:'검증 전용',maxTickets:2,published:false,exclusive:false,salesStart:'',sessions:[{id:'smoke-session',date:'2027-12-31',time:'20:00'}],grades:[{id:'smoke-grade',name:'일반석',price:1000,capacity:3,color:'#00cd3c'}]};
 const created=(await call('admin','/api/admin/shows','POST',show,201)).show;

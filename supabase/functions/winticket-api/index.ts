@@ -1,3 +1,4 @@
+import {DOMParser,XMLSerializer} from 'npm:@xmldom/xmldom@0.9.12';
 import {createClient} from 'npm:@supabase/supabase-js@2.95.3';
 import {validateShow} from './validation.js';
 
@@ -32,9 +33,10 @@ Deno.serve(async req=>{
   if(path==='/api/admin/password'&&(!['currentPassword','newPassword'].every(k=>typeof body[k]==='string'&&new TextEncoder().encode(body[k]).length<=72)||body.newPassword.length<12))return respond({error:'새 비밀번호는 12자 이상, UTF-8 72바이트 이하로 입력해 주세요.'},400);
   if((path==='/api/admin/shows'&&req.method==='POST')||(/^\/api\/admin\/shows\/[a-zA-Z0-9_-]+$/.test(path)&&req.method==='PUT')){
    const version=body.version,id=req.method==='POST'?crypto.randomUUID():path.split('/').at(-1);
-   body=validateShow(body,id);if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'공연 버전을 확인해 주세요.'},400);body.version=version;}
+   body=validateShow(body,id,{Parser:DOMParser,Serializer:XMLSerializer});if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'공연 버전을 확인해 주세요.'},400);body.version=version;}
   }
-  if(path==='/api/reservations'&&req.method==='POST'&&(!Number.isInteger(body.quantity)||body.quantity<1||body.quantity>10||!['showId','sessionId','gradeId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'공연·회차·수량을 확인해 주세요.'},400);
+  if(path==='/api/reservations'&&req.method==='POST'&&!Array.isArray(body.seatIds)&&(!Number.isInteger(body.quantity)||body.quantity<1||body.quantity>10||!['showId','sessionId','gradeId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'공연·회차·수량을 확인해 주세요.'},400);
+  if(path==='/api/reservations'&&req.method==='POST'&&body.seatIds!==undefined&&(!Array.isArray(body.seatIds)||body.seatIds.length<1||body.seatIds.length>10||new Set(body.seatIds).size!==body.seatIds.length||!body.seatIds.every(s=>typeof s==='string'&&/^[-\w]{1,100}$/.test(s))||!['showId','sessionId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'선택한 좌석 정보를 확인해 주세요.'},400);
   const {data,error}=await db.rpc('wt_gateway',{p_route:path,p_method:req.method,p_token:rawToken?await hash(rawToken):'',p_new_token:await hash(fresh),p_body:path==='/api/admin/uploads'?{}:body,p_ip:await hash(req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'unknown')});
   if(error){console.error('gateway',error.code,error.message);return respond({error:'서버에서 요청을 처리하지 못했습니다.'},500);}
   if(data.error)return respond({error:data.error},data.status||400);

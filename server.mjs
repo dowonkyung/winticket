@@ -15,6 +15,7 @@ function string(v,max=1000){if(typeof v!=='string'||v.length>max)throw fail(400,
 function integer(v,min,max){if(!Number.isInteger(v)||v<min||v>max)throw fail(400,'숫자 입력 범위를 확인해 주세요.');return v;}
 function imagePath(v){v=string(v,1000);if(v&&!/^(?:assets\/[a-zA-Z0-9_.@-]+\.(?:png|jpg|jpeg|webp)|\/uploads\/[a-f0-9]{32}\.(?:png|jpg|webp))$/.test(v))throw fail(400,'포스터와 상세 이미지는 파일 업로드를 사용해 주세요.');return v;}
 function validateShow(raw,id){
+ if(raw.seatMap)throw fail(400,'지정좌석은 Supabase 운영 모드에서 설정할 수 있습니다.');
  const v={id,title:string(raw.title,200),category:string(raw.category,50),poster:imagePath(raw.poster),detailImage:imagePath(raw.detailImage||''),venue:string(raw.venue,200),address:string(raw.address||'',300),age:string(raw.age||'',100),duration:string(raw.duration||'',100),artist:string(raw.artist||'',300),organizer:string(raw.organizer||'',300),description:string(raw.description||'',20000),notice:string(raw.notice||'',20000),salesStart:string(raw.salesStart||'',16),maxTickets:integer(raw.maxTickets,1,10),published:raw.published===true,exclusive:raw.exclusive===true};
  if(!v.title||!v.category||!v.venue||!v.poster)throw fail(400,'공연명, 장르, 공연장, 포스터는 필수입니다.');
  if(v.salesStart&&(!dateOK(v.salesStart.slice(0,10))||v.salesStart[10]!=='T'||!timeOK(v.salesStart.slice(11))))throw fail(400,'예매 오픈 일시를 확인해 주세요.');
@@ -139,7 +140,7 @@ export async function createApplication(options={}){
    }
    if(!['GET','HEAD'].includes(method))throw fail(405,'허용되지 않은 요청입니다.');
    let file;
-   const pages={'/':'index.html','/index.html':'index.html','/performance.html':'performance.html','/admin.html':'admin.html','/myticket.html':'myticket.html','/seed.json':'seed.json'};
+   const pages={'/':'index.html','/index.html':'index.html','/performance.html':'performance.html','/admin.html':'admin.html','/myticket.html':'myticket.html','/reservation.html':'reservation.html','/seed.json':'seed.json'};
    if(pages[route])file=path.join(root,pages[route]);
    else if(/^\/assets\/[a-zA-Z0-9_.@-]+$/.test(route))file=path.join(root,route.slice(1));
    else if(/^\/uploads\/[a-f0-9]{32}\.(png|jpg|webp)$/.test(route))file=path.join(data,route.slice(1));
