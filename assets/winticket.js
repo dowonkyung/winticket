@@ -1,4 +1,4 @@
-import {catalog,showLink} from './api.js';
+import {catalog,showLink} from './api.js?v=supabase-1';
 (async() => {
  const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
  const dialog=$('#site-dialog'), body=$('#dialog-body'), heading=$('#dialog-title');

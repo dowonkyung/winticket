@@ -1,4 +1,4 @@
-import {API_BASE} from './config.js';
+import {API_BASE} from './config.js?v=supabase-1';
 let currentSession,sessionPromise;
 const cloud=Boolean(API_BASE),storageKey='winticket-session-v1';
 function token(){return localStorage.getItem(storageKey)||'';}

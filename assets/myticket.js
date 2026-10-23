@@ -1,4 +1,4 @@
-import {api,session,el,money,dateLabel} from './api.js';
+import {api,session,el,money,dateLabel} from './api.js?v=supabase-1';
 const root=document.querySelector('#tickets-root'),message=document.querySelector('#ticket-message');
 async function load(){
  try{await session();const {reservations}=await api('/api/reservations');root.replaceChildren();if(!reservations.length){root.append(el('p','이 브라우저에서 신청한 공연이 없습니다.','ticket-empty'));return;}

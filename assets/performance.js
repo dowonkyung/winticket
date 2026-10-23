@@ -1,4 +1,4 @@
-import {api,session,catalog,el,money,dateLabel} from './api.js';
+import {api,session,catalog,el,money,dateLabel} from './api.js?v=supabase-1';
 const root=document.querySelector('#booking-root');
 const id=new URLSearchParams(location.search).get('id')||'nct-wish-2027';
 let show,availability={},offline=false,selectedDate='',selectedSession='',month='',busy=false;
