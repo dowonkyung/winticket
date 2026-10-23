@@ -110,6 +110,7 @@ begin
   select value into se from jsonb_array_elements(sh.data->'sessions') where value->>'id'=sid;
   select value into g from jsonb_array_elements(sh.data->'grades') where value->>'id'=gid;
   if not (sh.data->>'published')::boolean or se is null or ((sh.data->'seatMap' is null or sh.data->'seatMap'='null'::jsonb) and g is null) or qty is null or qty<1 or qty>(sh.data->>'maxTickets')::integer then return jsonb_build_object('error','공연·회차·수량을 확인해 주세요.','status',400); end if;
+  if ((sh.data->'seatMap' is not null and sh.data->'seatMap'<>'null'::jsonb) or p_body ? 'showVersion') and (nullif(p_body->>'showVersion','')::integer is distinct from sh.version) then return jsonb_build_object('error','공연 정보가 변경되었습니다. 새로고침 후 일정과 좌석을 다시 선택해 주세요.','status',409); end if;
   if nullif(sh.data->>'salesStart','') is not null and ((sh.data->>'salesStart')::timestamp at time zone 'Asia/Seoul')>now() then return jsonb_build_object('error','아직 예매 오픈 전입니다.','status',409); end if;
   if ((se->>'date'||'T'||(se->>'time'))::timestamp at time zone 'Asia/Seoul')<=now() then return jsonb_build_object('error','이미 시작된 공연 회차입니다.','status',409); end if;
   select coalesce(sum(quantity),0) into held from public.wt_reservations where owner=s.owner and show_id=sh.id and session_id=sid and status='requested';

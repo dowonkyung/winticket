@@ -16,12 +16,13 @@ show=(await call('admin','/api/admin/shows/'+show.id,'PUT',{...show,published:tr
 const same=await call('admin','/api/admin/shows/'+show.id,'PUT',show);show=same.show;
 const listed=(await call('x','/api/shows')).shows.find(s=>s.id===show.id);assert.equal(listed.hasSeatMap,true);assert.equal(listed.seatMap,undefined);
 for(const who of ['a','b','c','d'])await call(who,'/api/session');
-const baseBody={showId:show.id,sessionId:'s1'};
+const baseBody={showId:show.id,sessionId:'s1',showVersion:show.version};
 await call('a','/api/reservations','POST',{...baseBody,seatIds:['A-3']},409);
 await call('a','/api/reservations','POST',{...baseBody,seatIds:['missing']},409);
 await call('a','/api/reservations','POST',{...baseBody,seatIds:['A-0','A-0']},400);
 await call('a','/api/reservations','POST',{...baseBody,gradeId:'vip',quantity:1},400);
 await call('a','/api/reservations','POST',{...baseBody,seatIds:['A-0','A-1','A-2']},400);
+await call('a','/api/reservations','POST',{...baseBody,showVersion:show.version-1,seatIds:['A-0']},409);
 const mixed=await call('a','/api/reservations','POST',{...baseBody,seatIds:['A-0','B-0'],amount:1},201);
 assert.equal(mixed.reservation.quantity,2);assert.equal(mixed.reservation.amount,3000);assert.equal(mixed.reservation.snapshot.seats.length,2);
 const race=await Promise.all(['b','c','d'].map(async who=>{const r=await fetch(base+'/api/reservations',{method:'POST',headers:{'Content-Type':'application/json','X-Wint-Session':tokens.get(who)},body:JSON.stringify({...baseBody,seatIds:['A-1']})});return r.status;}));assert.equal(race.filter(s=>s===201).length,1);assert.ok(race.every(s=>[201,409].includes(s)));
@@ -30,7 +31,7 @@ await call('b','/api/reservations/'+mixed.reservation.id+'/cancel','POST',{},404
 const changed=structuredClone(show);changed.seatMap.zones[0].seats[0].number='99';await call('admin','/api/admin/shows/'+show.id,'PUT',changed,409);
 await call('a','/api/reservations/'+mixed.reservation.id+'/cancel','POST',{});await call('a','/api/reservations/'+mixed.reservation.id+'/cancel','POST',{},409);
 state=await call('x','/api/shows/'+show.id);assert.equal(state.occupied.s1.length,1);assert.equal(state.availability.s1.vip,10);assert.equal(state.availability.s1.r,11);
-const independent=await call('a','/api/reservations','POST',{showId:show.id,sessionId:'s2',seatIds:['A-1']},201);assert.equal(independent.reservation.amount,1000);
+const independent=await call('a','/api/reservations','POST',{showId:show.id,sessionId:'s2',showVersion:show.version,seatIds:['A-1']},201);assert.equal(independent.reservation.amount,1000);
 show=(await call('admin','/api/admin/shows/'+show.id,'PUT',{...show,published:false})).show;
 await call('b','/api/reservations','POST',{...baseBody,seatIds:['B-1']},400);
 console.log('PASS: SVG sanitization, computed capacity, unchanged layout save, draft privacy, mixed prices, atomic seat conflicts, blocked/unknown/duplicate seats, quantity limit, owner cancellation, seat release, independent sessions, booked layout protection');
