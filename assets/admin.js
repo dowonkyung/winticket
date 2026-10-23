@@ -1,4 +1,7 @@
 import {api,session,el,money,showLink} from './api.js';
+import {API_BASE} from './config.js';
+document.querySelector('#password-settings').hidden=!API_BASE;
+document.querySelector('#password-form').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=e.submitter,m=document.querySelector('#password-message');b.disabled=true;try{await api('/api/admin/password',{method:'POST',body:{currentPassword:f.elements.currentPassword.value,newPassword:f.elements.newPassword.value}});f.reset();m.textContent='비밀번호가 변경되었으며 다른 관리자 세션은 로그아웃되었습니다.';}catch(err){m.textContent=err.message;}finally{b.disabled=false;}});
 const $=s=>document.querySelector(s),form=$('#show-form');let shows=[],current={},uploading=0;
 function notify(message,error=false){const p=$('#admin-message');p.textContent=message;p.classList.toggle('error',error);p.setAttribute('role',error?'alert':'status');p.hidden=!message;if(error&&message)p.scrollIntoView({block:'center'});}
 function loginNotice(message){const p=$('#login-message');p.textContent=message;p.hidden=!message;}

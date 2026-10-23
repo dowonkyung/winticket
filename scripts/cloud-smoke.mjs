@@ -1,0 +1,48 @@
+// Explicitly invoked integration check against the deployed API. Credentials stay outside Git.
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const base='https://ahchwkcszyphbmppctbt.supabase.co/functions/v1/winticket-api';
+const credential=fs.readFileSync(process.env.WINTICKET_TEST_CREDENTIALS,'utf8');
+const password=credential.match(/초기 비밀번호: (.+)/)[1];
+const tokens=new Map();
+async function call(who,path,method='GET',body,expected=200){
+ const headers={'Origin':'https://winticket.saevit.online'};
+ if(tokens.has(who))headers['X-Wint-Session']=tokens.get(who);
+ if(body!==undefined)headers['Content-Type']='application/json';
+ const r=await fetch(base+path,{method,headers,body:body===undefined?undefined:JSON.stringify(body)}),v=await r.json();
+ assert.equal(r.status,expected,JSON.stringify(v));if(v.token)tokens.set(who,v.token);return v;
+}
+await call('admin','/api/session');
+await call('admin','/api/admin/login','POST',{username:'wintadmin',password});
+assert.equal((await call('admin','/api/session')).admin,'wintadmin');
+await call('x','/api/admin/shows','GET',undefined,401);
+const show={title:'[배포 검증] 자동 테스트 공연',category:'콘서트',poster:'assets/nct-wish-poster.jpg',venue:'검증 전용',maxTickets:2,published:false,exclusive:false,salesStart:'',sessions:[{id:'smoke-session',date:'2027-12-31',time:'20:00'}],grades:[{id:'smoke-grade',name:'일반석',price:1000,capacity:3,color:'#00cd3c'}]};
+const created=(await call('admin','/api/admin/shows','POST',show,201)).show;
+fs.writeFileSync(process.env.WINTICKET_TEST_RESULT,JSON.stringify({showId:created.id}));
+await call('x','/api/shows/'+created.id,'GET',undefined,404);
+const edited=(await call('admin','/api/admin/shows/'+created.id,'PUT',{...created,published:true})).show;
+await call('admin','/api/admin/shows/'+created.id,'PUT',{...created,published:true},409);
+assert.ok((await call('x','/api/shows')).shows.some(s=>s.id===created.id));
+const people=Array.from({length:8},(_,i)=>'guest'+i);
+await Promise.all(people.map(p=>call(p,'/api/session')));
+const request={showId:created.id,sessionId:'smoke-session',gradeId:'smoke-grade',quantity:1};
+const attempts=await Promise.all(people.map(async who=>{const r=await fetch(base+'/api/reservations',{method:'POST',headers:{'Content-Type':'application/json','X-Wint-Session':tokens.get(who)},body:JSON.stringify({...request,amount:1})});return{who,status:r.status,data:await r.json()};}));
+const winners=attempts.filter(x=>x.status===201);assert.equal(winners.length,3);assert.ok(attempts.every(x=>[201,409].includes(x.status)));assert.ok(winners.every(x=>x.data.reservation.amount===1000));
+assert.equal((await call('x','/api/shows/'+created.id)).availability['smoke-session']['smoke-grade'],0);
+const winner=winners[0],other=people.find(p=>!winners.some(w=>w.who===p));
+await call(other,'/api/reservations/'+winner.data.reservation.id+'/cancel','POST',{},404);
+await call(winner.who,'/api/reservations/'+winner.data.reservation.id+'/cancel','POST',{});
+await call(winner.who,'/api/reservations/'+winner.data.reservation.id+'/cancel','POST',{},409);
+assert.equal((await call('x','/api/shows/'+created.id)).availability['smoke-session']['smoke-grade'],1);
+await call('admin','/api/admin/shows/'+created.id,'PUT',{...edited,grades:[]},409);
+await call('admin','/api/admin/uploads','POST',{base64:Buffer.from('not an image').toString('base64')},400);
+const image=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=','base64');
+const upload=await call('admin','/api/admin/uploads','POST',{base64:image.toString('base64')},201);
+assert.equal((await fetch(upload.url)).status,200);
+fs.writeFileSync(process.env.WINTICKET_TEST_RESULT,JSON.stringify({showId:created.id,uploadName:upload.url.split('/').at(-1)}));
+await call('admin','/api/admin/shows/'+created.id,'PUT',{...edited,published:false});
+await call('x','/api/shows/'+created.id,'GET',undefined,404);
+const old=tokens.get('admin');await call('admin','/api/admin/logout','POST',{});
+tokens.set('revoked',old);await call('revoked','/api/admin/shows','GET',undefined,401);
+const denied=await fetch(base+'/api/session',{headers:{Origin:'https://example.org'}});assert.equal(denied.status,403);
+console.log('PASS: admin auth, public/draft, version conflict, concurrent inventory, server price, ownership, cancel once, stock restore, booked edits, uploads, logout revocation, CORS');

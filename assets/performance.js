@@ -31,7 +31,7 @@ function renderSeats(){const p=document.querySelector('#seat-panel');p.replaceCh
 function renderPage(){
  root.replaceChildren();document.title=show.title+' | 윈트티켓';
  const crumb=el('div',undefined,'booking-breadcrumb'),home=el('a','홈');home.href='index.html';crumb.append(home,document.createTextNode('  >  '+show.category+'  >  공연 상세'));root.append(crumb);
- if(offline)root.append(el('p','공연 정보를 미리보기로 표시하고 있습니다. 예매 신청은 서버형 배포 후 이용할 수 있습니다.','notice-banner'));
+ if(offline)root.append(el('p','공연 정보를 미리보기로 표시하고 있습니다. 현재 예매 서버에 연결되지 않아 신청할 수 없습니다. 잠시 뒤 새로고침해 주세요.','notice-banner'));
  if(!show.published)root.append(el('p','관리자 미리보기 · 아직 공개되지 않은 공연입니다.','notice-banner'));
  const product=el('section',undefined,'booking-product'),posterCol=el('div'),poster=el('img',undefined,'booking-poster');poster.src=show.poster;poster.alt=show.title;posterCol.append(poster);
  const links=el('div',undefined,'poster-links');const mine=el('a','예매 신청 내역','secondary-btn');mine.href='myticket.html';links.append(mine);posterCol.append(links);

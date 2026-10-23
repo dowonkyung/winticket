@@ -1,10 +1,14 @@
+# 윈트티켓 운영 배포
+
+https://winticket.saevit.online — GitHub Pages + Supabase(서울). 관리자: /admin.html. 운영·백업·인증 구조는 [DEPLOYMENT.md](DEPLOYMENT.md)를 참고하세요. 실제 결제·발권 연동은 미구현입니다.
+
 # 윈트티켓
 
 첨부된 메인·예매 페이지 구성과 윈트티켓 로고를 반영한 공연 사이트입니다. 메인의 이미지 스프라이트를 유지하면서 공연 상세·날짜·시간·좌석등급·수량 선택과 관리자 등록을 연결했습니다.
 
-## 실행
+## 자체 Node.js 서버 실행 (선택 사항)
 
-Node.js 24 LTS. 별도 패키지 설치 없이 실행합니다.
+운영 화면은 Supabase에 연결됩니다. 자체 서버를 실행하려면 assets/config.js의 API_BASE를 빈 문자열로 바꾼 뒤 Node.js 24 LTS로 실행합니다. 별도 패키지 설치는 없습니다.
 
 ```sh
 node server.mjs
@@ -25,9 +29,9 @@ node server.mjs
 
 ## 배포
 
-GitHub Pages에서는 정적 미리보기만 가능합니다. 사용자의 요청에 따라 현재는 **GitHub 구현과 Docker 배포 준비까지** 완료하며 운영 서버에 배포하지 않습니다.
+운영 화면은 GitHub Pages, 저장 및 인증 API는 Supabase(서울)에 배포합니다. main 커밋은 기존 Pages 배포를 자동 실행합니다. API 서버 소스는 supabase/functions/winticket-api/, 데이터베이스 스키마는 supabase/schema.sql에 있습니다.
 
-실행·관리자 최초 설정·Docker·HTTPS·도메인 DNS 전환·데이터 보존은 [DEPLOYMENT.md](DEPLOYMENT.md)를 참고하세요.
+운영 인증·백업 및 선택적인 Docker 자체 서버 구성은 [DEPLOYMENT.md](DEPLOYMENT.md)를 참고하세요.
 
 ## 검증
 
