@@ -1,0 +1,7 @@
+winticket.saevit.online {
+    encode zstd gzip
+    request_body {
+        max_size 8MB
+    }
+    reverse_proxy app:4173
+}

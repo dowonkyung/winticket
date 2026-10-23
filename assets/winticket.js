@@ -1,5 +1,5 @@
-'use strict';
-(() => {
+import {catalog,showLink} from './api.js';
+(async() => {
  const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
  const dialog=$('#site-dialog'), body=$('#dialog-body'), heading=$('#dialog-title');
  function open(title){heading.textContent=title;body.replaceChildren();if(!dialog.open)dialog.showModal();}
@@ -7,15 +7,20 @@
  dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
  const note='현재 윈트티켓 메인 페이지 시안입니다. 실제 예매·결제 기능은 준비 중입니다.';
  function text(tag,value,cls){const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;}
+ let shows=[];try{shows=(await catalog()).shows;}catch{}
+ const matchShow=record=>shows.find(s=>s.id===record.id||s.poster===record.image||s.legacyPoster===record.image||s.title===record.title);
+ const posterList=$('#perf_poster');
+ if(shows.length&&posterList){posterList.replaceChildren();shows.forEach(s=>{const li=document.createElement('li'),a=document.createElement('a');a.className='inner';a.href=showLink(s.id);const thumb=document.createElement('span');thumb.className='thumb';const image=document.createElement('img');image.src=s.poster;image.alt=s.title;image.loading='lazy';thumb.append(image);a.append(thumb,text('strong',s.title,'tit'),text('span',s.period,'day'),text('span',s.venue,'location'));li.append(a);posterList.append(li);});}
  const records=[];const seen=new Set();
  $$('#cont_wrap a').forEach(a=>{
    const li=a.closest('li'), image=$('img',a)|| (li&&$('img',li));
    if(!image)return;
    const title=(li?.dataset.tiaraProductTitle || $('.name',a)?.textContent || $('.tit',a)?.textContent || $('.tit_cont',a)?.textContent || $('.txt',li||a)?.textContent || a.textContent || image.alt).trim();
    if(!title||seen.has(title))return;seen.add(title);
-   records.push({title,image:image.getAttribute('src'),day:$('.day',li||a)?.textContent?.trim()||'',location:$('.location',li||a)?.textContent?.trim()||''});
+   const record={title,image:image.getAttribute('src'),day:$('.day',li||a)?.textContent?.trim()||'',location:$('.location',li||a)?.textContent?.trim()||''};const linked=matchShow(record);if(linked){record.id=linked.id;record.category=linked.category;}records.push(record);
  });
  function detail(record){
+   const show=matchShow(record);if(show){location.href=showLink(show.id);return;}
    open(record.title);const row=document.createElement('div');row.className='detail-layout';const img=document.createElement('img');img.src=record.image;img.alt=record.title;
    const info=document.createElement('div');info.className='detail-info';
    if(record.day)info.append(text('p',record.day));if(record.location)info.append(text('p',record.location));info.append(text('p',note,'detail-note'));row.append(img,info);body.append(row);
@@ -41,7 +46,7 @@
  const banners=$$('.cmn_banner .item');let banner=Math.max(0,banners.findIndex(b=>b.style.display!=='none'));
  $$('.gnb_banner_btn a').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();banner=(banner+(a.classList.contains('next')?1:-1)+banners.length)%banners.length;banners.forEach((b,i)=>b.style.display=i===banner?'block':'none');}));
  function scrollToSelector(sel){const el=$(sel);if(el)el.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth',block:'start'});}
- $$('.wint-nav').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const label=a.textContent.trim();if(label==='티켓오픈소식')return scrollToSelector('.box_ticket_open');if(label==='랭킹')return scrollToSelector('.box_ranking');if(label==='콘서트')return scrollToSelector('.wrap_main_concert');if(label==='뮤지컬/연극')return results(label,records.filter(r=>/뮤지컬|연극/.test(r.title)));if(label==='전시/행사')return results(label,records.filter(r=>/전시|사진전|그라운드/.test(r.title)));if(label==='클래식')return results(label,records.filter(r=>/클래식|오케스트라|피아노|협주곡|Diana|Tango/.test(r.title)));if(label==='팬클럽/팬미팅')return results(label,records.filter(r=>/팬|NCT|PARK|WISH/.test(r.title)));open(label);body.append(text('p',note));}));
+ $$('.wint-nav').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();const label=a.textContent.trim();if(label==='마이티켓'){location.href='myticket.html';return;}if(label==='티켓오픈소식')return scrollToSelector('.box_ticket_open');if(label==='랭킹')return scrollToSelector('.box_ranking');if(label==='콘서트')return scrollToSelector('.wrap_main_concert');if(label==='뮤지컬/연극')return results(label,records.filter(r=>r.category===label||/뮤지컬|연극/.test(r.title)));if(label==='전시/행사')return results(label,records.filter(r=>r.category===label||/전시|사진전|그라운드/.test(r.title)));if(label==='클래식')return results(label,records.filter(r=>r.category===label||/클래식|오케스트라|피아노|협주곡|Diana|Tango/.test(r.title)));if(label==='팬클럽/팬미팅')return results(label,records.filter(r=>r.category===label||/팬|NCT|PARK|WISH/.test(r.title)));open(label);body.append(text('p',note));}));
  document.addEventListener('click',e=>{
    const a=e.target.closest('a[href="#"]');if(!a||e.defaultPrevented)return;e.preventDefault();
    const li=a.closest('li'),img=$('img',a)||(li&&$('img',li));
@@ -51,4 +56,5 @@
    if(/For U/.test(label))return results('당신을 위한 추천 공연',records.slice(0,9));
    open(label);body.append(text('p',/로그인|회원가입/.test(label)?'회원 서비스는 준비 중입니다. 계정 정보는 입력받지 않습니다.':note));
  });
+ const params=new URLSearchParams(location.search);if(params.get('q')){$('#top_search').value=params.get('q');search();}else if(params.get('category')){const a=$$('.wint-nav').find(a=>a.textContent.trim()===params.get('category'));a?.click();}
 })();
