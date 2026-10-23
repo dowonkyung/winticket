@@ -14,10 +14,10 @@ function renderMap(target,large=false){target.replaceChildren();if(!show.seatMap
 function drawSeats(){const target=$('#seat-grid'),map=$('#large-map'),z=zone();target.replaceChildren();target.hidden=!z;map.hidden=!!z;$('#stage-heading').hidden=!z;
  if(!z){if(show.seatMap){renderMap(map,true);}else{const box=el('div',undefined,'quantity-stage'),img=el('img');img.src=show.poster;img.alt='';box.append(img,el('h2','좌석등급·매수 선택'),el('p','좌석도가 등록되지 않은 공연입니다.'),el('p','오른쪽에서 좌석등급과 매수를 선택해 주세요.'));map.replaceChildren(box);}return;}
  $('#current-zone-label').textContent='현재 보고 계신 구역은 '+z.name+' 구역입니다.';
+ if(!z.seats.length){target.style.gridTemplateColumns='1fr';target.append(el('p','이 구역의 좌석은 준비 중입니다.','popup-empty'));return;}
  target.style.gridTemplateColumns=`32px repeat(${z.columns},var(--seat-size,22px))`;
  const cells=new Map(z.seats.map(s=>[s.row+':'+s.col,s])),taken=sold();
  for(let row=1;row<=z.rows;row++){target.append(el('span',row,'seat-row-number'));for(let col=1;col<=z.columns;col++){const seat=cells.get(row+':'+col);if(!seat){target.append(el('span','', 'seat-space'));continue;}const grade=show.grades.find(g=>g.id===seat.gradeId),b=el('button',undefined,'seat-square'+(selected.has(seat.id)?' selected':''));b.type='button';b.style.setProperty('--seat-color',grade?.color||'#bea886');b.disabled=seat.blocked||taken.has(seat.id)||closed()||completed;b.setAttribute('aria-label',`${seatLabel(seatWithZone(seat,z))} · ${grade?.name||''} · ${b.disabled?'선택 불가':money(grade?.price||0)}`);b.setAttribute('aria-pressed',String(selected.has(seat.id)));b.title=b.getAttribute('aria-label');b.addEventListener('click',()=>{error('');if(selected.has(seat.id))selected.delete(seat.id);else{if(selected.size>=show.maxTickets){error(`회차당 최대 ${show.maxTickets}매까지 선택할 수 있습니다.`);return;}selected.add(seat.id);}confirming=false;render();});target.append(b);}}
- if(!z.seats.length)target.append(el('p','이 구역의 좌석은 준비 중입니다.','popup-empty'));
 }
 function seatWithZone(s,z){return{...s,zoneName:z.name};}
 function renderGrades(){const target=$('#popup-grades');target.replaceChildren();show.grades.forEach(g=>{const line=el('button',undefined,'grade-line');line.type='button';const color=el('i',undefined,'color');color.style.setProperty('--seat-color',g.color);const label=el('span',g.name);label.append(el('small',`잔여 ${remaining(g)}석`));line.append(color,label,el('span',money(g.price),'price'));const details=el('div',undefined,'grade-zone-list');
@@ -57,3 +57,4 @@ try{
  else{if(!id)throw new Error('공연 정보가 없습니다.');await session();await refresh();}
  loaded=true;$('#reservation-shell').setAttribute('aria-busy','false');
 }catch(e){error(e.message);$('#popup-title').textContent='공연을 불러오지 못했습니다.';$('#reservation-shell').setAttribute('aria-busy','false');}
+
