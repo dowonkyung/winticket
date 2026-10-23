@@ -57,4 +57,3 @@ try{
  else{if(!id)throw new Error('공연 정보가 없습니다.');await session();await refresh();}
  loaded=true;$('#reservation-shell').setAttribute('aria-busy','false');
 }catch(e){error(e.message);$('#popup-title').textContent='공연을 불러오지 못했습니다.';$('#reservation-shell').setAttribute('aria-busy','false');}
-
