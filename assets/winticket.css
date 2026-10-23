@@ -1,4 +1,9 @@
 :root{--wint-green:#00cd3c}
+/* Original image lettering: retain accessible labels and existing interactions. */
+#header_wrap #gnb_menu .wint-nav{position:static;left:auto;top:auto;flex:none;height:42px;line-height:42px;text-indent:-9999px;overflow:hidden;font-size:0;background-image:url('sprites-ticket@2x.png');background-size:1008px auto;background-repeat:no-repeat}
+#header_wrap #gnb_menu .wint-nav:hover,#header_wrap #gnb_menu .wint-nav:focus-visible{background-position-y:-50px}
+#header_wrap #gnb_menu .on>.wint-nav,#header_wrap #gnb_menu .wint-nav[aria-current="page"]{background-position-y:-100px}
+#header_wrap #util_menu .wint-util.btn_gnb{display:block;padding:0;height:29px;line-height:29px;text-indent:-9999px;overflow:hidden;font-size:0;background-image:url('btn_gnb_20240122.png');background-repeat:no-repeat}
 #conts_section{margin-left:auto!important;margin-right:auto!important}
 html{scroll-behavior:smooth}body{min-width:0}a:focus-visible,button:focus-visible,input:focus-visible{outline:2px solid #008e2a;outline-offset:4px}
 #header_wrap #logo{margin-top:25px;margin-right:28px}#logo img{width:180px;height:auto;display:block}
