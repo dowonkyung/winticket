@@ -44,6 +44,24 @@ dialog::backdrop{background:#0008}dialog h2{font-size:23px;line-height:1.5;paddi
  .detail-layout{gap:16px}.detail-layout img{width:110px}.results{grid-template-columns:repeat(2,minmax(0,1fr))}dialog{padding:24px}dialog h2{font-size:20px}
 }
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+/* Crop separator pixels out of the sprite; the navigation owns one continuous rule. */
+#header_wrap #gnb_menu{height:42px}
+#header_wrap #gnb_menu .list_gnb{height:42px}
+#header_wrap #gnb_menu .wint-nav{position:relative;background-image:none;height:42px;line-height:42px}
+#header_wrap #gnb_menu .wint-nav::before{content:'';position:absolute;left:0;right:0;top:2px;height:38px;background:url('sprites-ticket@2x.png') var(--sprite-x,0px) -2px/1008px auto no-repeat;pointer-events:none}
+#header_wrap #gnb_menu .wint-nav:hover::before,#header_wrap #gnb_menu .wint-nav:focus-visible::before{background-position-y:-52px}
+#header_wrap #gnb_menu .on>.wint-nav::before,#header_wrap #gnb_menu .wint-nav[aria-current="page"]::before{background-position-y:-102px}
+#gnb_menu .btn_g_menu03{--sprite-x:-82px}#gnb_menu .btn_g_menu12{--sprite-x:-203px}#gnb_menu .btn_g_menu10{--sprite-x:-340px}#gnb_menu .btn_g_menu11{--sprite-x:-422px}#gnb_menu .btn_g_menu04{--sprite-x:-528px}#gnb_menu .btn_g_menu05{--sprite-x:-634px}#gnb_menu .btn_g_menu06{--sprite-x:-701px}#gnb_menu .btn_g_menu07{--sprite-x:-829px}#gnb_menu .btn_g_menu09{--sprite-x:-913px}
+.footer_quick_link .l_box a.footer-brand{background:none;height:auto;margin:0;display:block}.footer_quick_link .l_box{padding-top:0}.footer-brand img{width:100px;opacity:.6;filter:grayscale(1)}
+#footer .footer_quick_link .r_box{display:flex;align-items:center;justify-content:flex-end;gap:30px;width:auto}
+#footer .footer_quick_link .r_box a{margin:0;text-decoration:none;white-space:nowrap}
+#footer .footer_quick_link .r_box .r_box_m1,#footer .footer_quick_link .r_box .r_box_m2{font-size:0;text-indent:-9999px;overflow:hidden;height:14px;flex:none}
+#footer .footer_quick_link .r_box .r_box_m1{width:60px;background-position:0 0}#footer .footer_quick_link .r_box .r_box_m2{width:71px;background-position:-88px 0}
+#footer .footer_quick_link .r_box .r_box_m1:hover{background-position:0 -14px}#footer .footer_quick_link .r_box .r_box_m2:hover{background-position:-88px -14px}
+#footer .footer_quick_link .r_box a.footer-contact{height:auto;background:none;font-size:12px;color:#888}
+.wint-top{position:fixed;z-index:20;bottom:350px;right:max(20px,calc((100vw - 1008px)/2 - 60px));width:50px;height:50px;display:none;background:url('ui-707cfd435ffd.png') 0 0 no-repeat;text-indent:-9999px;overflow:hidden}.wint-top:hover{background-position:0 -50px}.wint-top.is-visible{display:block}
+@media(min-width:1151px){.wrap_main_slider .slider_inner{overflow:visible}.wrap_main_slider #sliderInner{transform:translateX(-822px)}.wrap_main_slider .list_slider li:not(.on) .thumb img{filter:brightness(.55)}}
+@media(max-width:760px){#header_wrap #gnb_menu,#header_wrap #gnb_menu .list_gnb{height:42px}#footer .footer_quick_link .r_box{gap:14px;flex-wrap:wrap}.footer_quick_link .l_box{width:auto;flex:none}.footer-brand img{width:90px}.wint-top{right:16px;bottom:16px}}
 @media(max-width:1400px){.rightWingBanner{display:none!important}}
 @media(max-width:1150px){#conts{width:100%!important;box-sizing:border-box;padding-left:0!important;padding-right:0!important}#wrap>.my_fold,#footer{width:100%!important;min-width:0!important}.footer_notice{width:calc(100% - 32px)!important;box-sizing:border-box}.footer_notice ul{width:calc(100% - 70px)!important}.rightWingBanner{display:none!important}}
 @media(max-width:760px){.wrap_main_slider #slider>.prev,.wrap_main_slider #slider>.next{position:absolute!important;top:32%!important;width:32px!important;height:48px!important;padding:0!important;background:#ffffffb8!important}.wrap_main_slider #slider>.prev{left:0!important}.wrap_main_slider #slider>.next{right:0!important}.wrap_main_slider .slider_inner{height:auto!important}#footer .inner_footer p,#footer .inner_footer ul{width:100%!important}.footer_notice .date{display:none}.footer_notice .n_txt{width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}}
