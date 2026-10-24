@@ -1,3 +1,5 @@
+import {DOMParser,XMLSerializer} from '@xmldom/xmldom';
+import {validateSeatTemplate,templateSummary} from './assets/seat-template-model.js';
 import {defaultHome,validateHome,publicHome} from './assets/homepage-model.js';
 import {mapEmbedUrl,validateVenue,venueFields} from './assets/venue-model.js';
 import {validateBookingNotice} from './assets/notice-model.js';
@@ -56,6 +58,9 @@ export async function createApplication(options={}){
  }
  db.exec('CREATE TABLE IF NOT EXISTS venues(id TEXT PRIMARY KEY,data TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1)');
  const allVenues=()=>db.prepare('SELECT * FROM venues ORDER BY rowid DESC').all().map(r=>({...JSON.parse(r.data),version:r.version}));
+ db.exec('CREATE TABLE IF NOT EXISTS seat_templates(id TEXT PRIMARY KEY,venue_id TEXT NOT NULL REFERENCES venues(id),data TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1)');
+ const allSeatTemplates=()=>db.prepare('SELECT * FROM seat_templates ORDER BY rowid DESC').all().map(r=>({...JSON.parse(r.data),version:r.version}));
+ const getSeatTemplate=id=>{const t=allSeatTemplates().find(t=>t.id===id);if(!t)throw fail(404,'구역도 양식을 찾을 수 없습니다.');return t;};
  const getVenue=id=>{const v=allVenues().find(v=>v.id===id);if(!v)throw fail(400,'등록된 공연장을 선택해 주세요.');return v;};
  for(const row of db.prepare('SELECT * FROM shows').all()){const s=JSON.parse(row.data);if(s.venueId||!s.venue)continue;let v=allVenues().find(v=>v.name===s.venue);if(!v){v={id:randomUUID(),name:s.venue,logo:s.venueImage||'',address:s.address||'',phone:s.venuePhone||'',website:s.venueWebsite||'',mapUrl:''};db.prepare('INSERT INTO venues(id,data) VALUES(?,?)').run(v.id,JSON.stringify(v));}s.venueId=v.id;db.prepare('UPDATE shows SET data=? WHERE id=?').run(JSON.stringify(s),s.id);}
  const resolveVenue=s=>s.venueId?{...s,...venueFields(getVenue(s.venueId))}:s;
@@ -107,6 +112,9 @@ export async function createApplication(options={}){
     if(method==='GET'&&route==='/api/shows')return json(res,200,{shows:allShows(false),retiredPosters:allShows(true,true).filter(s=>s.deletedAt&&s.deletedWasPublished).flatMap(s=>[s.poster,s.legacyPoster]).filter(p=>p&&!allShows(false).some(s=>s.poster===p||s.legacyPoster===p))});
     const showMatch=route.match(/^\/api\/shows\/([a-zA-Z0-9_-]+)$/);
     if(method==='GET'&&showMatch){const show=getShow(showMatch[1]);if(show.deletedAt||(!show.published&&!session?.admin))throw fail(404,'공연을 찾을 수 없습니다.');return json(res,200,{show,availability:availability(show)});}
+    if(method==='GET'&&route==='/api/admin/seat-templates'){requireAdmin(session);return json(res,200,{templates:allSeatTemplates().map(templateSummary)});}
+    const templateRead=route.match(/^\/api\/admin\/seat-templates\/([a-zA-Z0-9_-]+)$/);
+    if(method==='GET'&&templateRead){requireAdmin(session);return json(res,200,{template:getSeatTemplate(templateRead[1])});}
     if(method==='GET'&&route==='/api/admin/venues'){requireAdmin(session);return json(res,200,{venues:allVenues()});}
     if(method==='GET'&&route==='/api/admin/shows'){requireAdmin(session);return json(res,200,{shows:allShows(true),deletedShows:allShows(true,true).filter(s=>s.deletedAt)});}
     if(method==='GET'&&route==='/api/reservations'){
@@ -130,6 +138,11 @@ export async function createApplication(options={}){
      requireAdmin(session);const v=await body(req),encoded=string(v.base64,7500000);if(!/^[a-zA-Z0-9+/]*={0,2}$/.test(encoded))throw fail(400,'이미지 파일을 확인해 주세요.');const bytes=Buffer.from(encoded,'base64');if(bytes.length>5*1024*1024)throw fail(413,'이미지는 5MB 이하로 업로드해 주세요.');
      const ext=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))?'png':bytes[0]===255&&bytes[1]===216&&bytes[2]===255?'jpg':bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP'?'webp':null;
      if(!ext)throw fail(400,'PNG, JPEG, WebP 이미지만 지원합니다.');const name=randomBytes(16).toString('hex')+'.'+ext;await writeFile(path.join(data,'uploads',name),bytes,{flag:'wx'});return json(res,201,{url:'/uploads/'+name});
+    }
+    const templateEdit=route.match(/^\/api\/admin\/seat-templates\/([a-zA-Z0-9_-]+)$/);
+    if((route==='/api/admin/seat-templates'&&method==='POST')||(templateEdit&&method==='PUT')){requireAdmin(session);const raw=await body(req,7500000),id=templateEdit?templateEdit[1]:randomUUID(),v=validateSeatTemplate(raw,id,{Parser:DOMParser,Serializer:XMLSerializer});getVenue(v.venueId);
+     if(templateEdit){const old=getSeatTemplate(id);if(raw.version!==old.version)throw fail(409,'구역도 양식이 변경되었습니다. 다시 불러와 주세요.');db.prepare('UPDATE seat_templates SET venue_id=?,data=?,version=version+1 WHERE id=?').run(v.venueId,JSON.stringify(v),id);}
+     else db.prepare('INSERT INTO seat_templates(id,venue_id,data) VALUES(?,?,?)').run(id,v.venueId,JSON.stringify(v));return json(res,templateEdit?200:201,{template:getSeatTemplate(id)});
     }
     const venueMatch=route.match(/^\/api\/admin\/venues\/([a-zA-Z0-9_-]+)$/);
     if((route==='/api/admin/venues'&&method==='POST')||(venueMatch&&method==='PUT')){

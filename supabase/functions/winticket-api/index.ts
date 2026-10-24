@@ -1,5 +1,6 @@
 import {DOMParser,XMLSerializer} from 'npm:@xmldom/xmldom@0.9.12';
 import {createClient} from 'npm:@supabase/supabase-js@2.95.3';
+import {validateSeatTemplate} from '../../../assets/seat-template-model.js';
 import {validateVenue} from '../../../assets/venue-model.js';
 import {validateShow} from './validation.js';
 
@@ -37,6 +38,7 @@ Deno.serve(async req=>{
    body=validateShow(body,id,{Parser:DOMParser,Serializer:XMLSerializer});if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'공연 버전을 확인해 주세요.'},400);body.version=version;}
   }
   if((path==='/api/admin/venues'&&req.method==='POST')||(/^\/api\/admin\/venues\/[a-zA-Z0-9_-]+$/.test(path)&&req.method==='PUT')){const version=body.version;body=validateVenue(body,req.method==='POST'?crypto.randomUUID():path.split('/').at(-1));if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'공연장 버전을 확인해 주세요.'},400);body.version=version;}}
+  if((path==='/api/admin/seat-templates'&&req.method==='POST')||(/^\/api\/admin\/seat-templates\/[a-zA-Z0-9_-]+$/.test(path)&&req.method==='PUT')){const version=body.version;body=validateSeatTemplate(body,req.method==='POST'?crypto.randomUUID():path.split('/').at(-1),{Parser:DOMParser,Serializer:XMLSerializer});if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'양식 버전을 확인해 주세요.'},400);body.version=version;}}
   if(path==='/api/reservations'&&req.method==='POST'&&!Array.isArray(body.seatIds)&&(!Number.isInteger(body.quantity)||body.quantity<1||body.quantity>10||!['showId','sessionId','gradeId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'공연·회차·수량을 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.seatIds!==undefined&&(!Array.isArray(body.seatIds)||body.seatIds.length<1||body.seatIds.length>10||new Set(body.seatIds).size!==body.seatIds.length||!body.seatIds.every(s=>typeof s==='string'&&/^[-\w]{1,100}$/.test(s))||!['showId','sessionId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'선택한 좌석 정보를 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.showVersion!==undefined&&(!Number.isInteger(body.showVersion)||body.showVersion<1))return respond({error:'공연 정보 버전을 확인해 주세요.'},400);
@@ -74,6 +76,6 @@ Deno.serve(async req=>{
   if(path==='/api/session')data.member=member;
   if(data.newSession){delete data.newSession;data.token=fresh;}
   else delete data.newSession;
-  return respond(data,req.method==='POST'&&['/api/admin/shows','/api/reservations'].includes(path)?201:200);
+  return respond(data,req.method==='POST'&&['/api/admin/shows','/api/admin/seat-templates','/api/reservations'].includes(path)?201:200);
  }catch(e){console.error('request',e.message);return respond({error:e.status?e.message:'서버에서 요청을 처리하지 못했습니다.'},e.status||500);}
 });

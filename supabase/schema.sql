@@ -36,6 +36,11 @@ insert into public.wt_venues(id,data)
 select id,jsonb_build_object('id',id,'name',name,'logo',logo,'address',address,'phone',phone,'website',website,'mapUrl',mapurl)
 from (select gen_random_uuid()::text id, data->>'venue' name,coalesce(max(data->>'venueImage'),'') logo,coalesce(max(data->>'address'),'') address,coalesce(max(data->>'venuePhone'),'') phone,coalesce(max(data->>'venueWebsite'),'') website,coalesce(max(data->>'venueMapUrl'),'') mapurl from public.wt_shows where coalesce(data->>'venue','')<>'' group by data->>'venue') x;
 update public.wt_shows h set data=h.data||jsonb_build_object('venueId',v.id),version=h.version+1 from public.wt_venues v where h.data->>'venue'=v.data->>'name';
+create table public.wt_seat_templates(id text primary key,venue_id text not null references public.wt_venues(id),data jsonb not null,version integer not null default 1,created timestamptz not null default now());
+create index wt_seat_templates_venue on public.wt_seat_templates(venue_id);
+alter table public.wt_seat_templates enable row level security;
+revoke all on public.wt_seat_templates from public,anon,authenticated;
+grant all on public.wt_seat_templates to service_role;
 CREATE OR REPLACE FUNCTION public.wt_gateway(p_route text, p_method text, p_token text, p_new_token text, p_body jsonb, p_ip text)
  RETURNS jsonb
  LANGUAGE plpgsql
@@ -158,6 +163,28 @@ begin
   select data into a from public.wt_venues where id=p_body->>'venueId';
   if a is null then return jsonb_build_object('error','등록된 공연장을 선택해 주세요.','status',400); end if;
   p_body=p_body||jsonb_build_object('venueId',a->'id','venue',a->'name','venueImage',a->'logo','address',a->'address','venuePhone',a->'phone','venueWebsite',a->'website','venueMapUrl',a->'mapUrl','venueLat','','venueLng','');
+ end if;
+ if p_route='/api/admin/seat-templates' and p_method='GET' then
+  return jsonb_build_object('templates',coalesce((select jsonb_agg((h.data-'seatMap')||jsonb_build_object('version',h.version,'zoneCount',jsonb_array_length(h.data->'seatMap'->'zones'),'seatCount',(select count(*) from jsonb_array_elements(h.data->'seatMap'->'zones') z cross join lateral jsonb_array_elements(z->'seats') st where st->'blocked'='false'::jsonb)) order by h.created desc,h.id) from public.wt_seat_templates h),'[]'::jsonb));
+ end if;
+ if p_route ~ '^/api/admin/seat-templates/[a-zA-Z0-9_-]+$' and p_method='GET' then
+  select data,version into v,n from public.wt_seat_templates where id=split_part(p_route,'/',5);
+  if v is null then return jsonb_build_object('error','구역도 양식을 찾을 수 없습니다.','status',404); end if;
+  return jsonb_build_object('template',v||jsonb_build_object('version',n));
+ end if;
+ if p_route='/api/admin/seat-templates' and p_method='POST' then
+  if not exists(select 1 from public.wt_venues where id=p_body->>'venueId') then return jsonb_build_object('error','등록된 공연장을 선택해 주세요.','status',400); end if;
+  insert into public.wt_seat_templates(id,venue_id,data) values(p_body->>'id',p_body->>'venueId',p_body);
+  return jsonb_build_object('template',p_body||jsonb_build_object('version',1));
+ end if;
+ if p_route ~ '^/api/admin/seat-templates/[a-zA-Z0-9_-]+$' and p_method='PUT' then
+  select data,version into v,n from public.wt_seat_templates where id=split_part(p_route,'/',5) for update;
+  if v is null then return jsonb_build_object('error','구역도 양식을 찾을 수 없습니다.','status',404); end if;
+  if n is distinct from (p_body->>'version')::integer then return jsonb_build_object('error','구역도 양식이 변경되었습니다. 다시 불러와 주세요.','status',409); end if;
+  if not exists(select 1 from public.wt_venues where id=p_body->>'venueId') then return jsonb_build_object('error','등록된 공연장을 선택해 주세요.','status',400); end if;
+  v=p_body-'version';
+  update public.wt_seat_templates set data=v,venue_id=v->>'venueId',version=version+1 where id=v->>'id' returning version into n;
+  return jsonb_build_object('template',v||jsonb_build_object('version',n));
  end if;
  if p_route='/api/admin/password' and p_method='POST' then
   if not exists(select 1 from public.wt_admins where username=s.admin and password_hash=extensions.crypt(p_body->>'currentPassword',password_hash)) then return jsonb_build_object('error','현재 비밀번호를 확인해 주세요.','status',401); end if;

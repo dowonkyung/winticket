@@ -91,6 +91,19 @@ test('persistent admin catalog and reservation workflow',async t=>{
   await app.close();await start();assert.ok((await admin.request('/api/admin/shows')).body.deletedShows.some(x=>x.id===linked.id));
   r=await admin.request('/api/admin/shows/'+linked.id+'/restore','POST',{version:deleted.version});assert.equal(r.status,200);assert.equal(r.body.show.published,true);assert.equal((await visitor.request('/api/shows/'+linked.id)).body.availability.first.general,2);
  });
+ await t.test('private venue templates support multiple layouts, version checks and persisted independent copies',async()=>{
+  assert.equal((await guest.request('/api/admin/seat-templates')).status,401);
+  const venue=(await admin.request('/api/admin/venues')).body.venues[0];
+  const fixture={venueId:venue.id,name:'기본 구역도',grades:[{id:'g',name:'일반석',price:1000,color:'#00cd3c'}],seatMap:{svg:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect id="area" width="100" height="100"/></svg>',zones:[{id:'A',name:'A',elementId:'area',rows:1,columns:2,seats:[{id:'a1',row:1,col:1,number:'1',gradeId:'g',blocked:false},{id:'a2',row:1,col:2,number:'2',gradeId:'g',blocked:true}]}]}};
+  const r=await admin.request('/api/admin/seat-templates','POST',fixture);assert.equal(r.status,201);const saved=r.body.template;assert.equal(saved.grades[0].capacity,1);
+  assert.equal((await guest.request('/api/admin/seat-templates/'+saved.id)).status,401);assert.equal((await guest.request('/api/admin/seat-templates','POST',fixture)).status,401);
+  assert.equal((await admin.request('/api/admin/seat-templates','POST',{...fixture,venueId:'missing'})).status,400);
+  const second=(await admin.request('/api/admin/seat-templates','POST',{...fixture,name:'변형 구역도'})).body.template;const changed=structuredClone(saved);changed.name='기본 구역도 수정';changed.seatMap.zones[0].seats[0].blocked=true;
+  assert.equal((await admin.request('/api/admin/seat-templates/'+saved.id,'PUT',changed)).status,200);assert.equal((await admin.request('/api/admin/seat-templates/'+saved.id,'PUT',changed)).status,409);
+  assert.equal((await admin.request('/api/admin/seat-templates/'+second.id)).body.template.seatMap.zones[0].seats[0].blocked,false);
+  const summaries=(await admin.request('/api/admin/seat-templates')).body.templates;assert.equal(summaries.length,2);assert.ok(!('seatMap' in summaries[0]));assert.equal(summaries.find(t=>t.id===second.id).seatCount,1);
+  await app.close();await start();assert.equal((await admin.request('/api/admin/seat-templates/'+saved.id)).body.template.name,'기본 구역도 수정');
+ });
  await t.test('catalog and reservations survive a restart',async()=>{await app.close();await start();assert.equal((await guest.request('/api/shows/'+show.id)).body.show.title,fixture.title);assert.equal((await guest.request('/api/reservations')).body.reservations[0].status,'cancelled');assert.equal((await admin.request('/api/admin/reservations')).status,200);});
  await t.test('logout revokes administrator access',async()=>{assert.equal((await admin.request('/api/admin/logout','POST',{})).status,200);assert.equal((await admin.request('/api/admin/shows')).status,401);});
  await t.test('guest history survives administrator login and logout in the same browser',async()=>{assert.equal((await guest.request('/api/admin/login','POST',{username:'qa_admin',password:'test-only-password-123'})).status,200);assert.equal((await guest.request('/api/reservations')).body.reservations[0].id,reservation.id);await guest.request('/api/admin/logout','POST',{});assert.equal((await guest.request('/api/reservations')).body.reservations[0].id,reservation.id);});

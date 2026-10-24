@@ -49,7 +49,7 @@ export function validateSeatMap(raw,grades,{Parser,Serializer}={}){
    seatIds.add(s.id);positions.add(s.row+':'+s.col);labels.add(s.row+':'+s.number);total++;
    return{id:s.id,row:s.row,col:s.col,number:s.number.trim(),gradeId:s.gradeId,blocked:s.blocked===true};
   });
-  return{id:z.id,name:z.name.trim(),elementId:z.elementId,rows:z.rows,columns:z.columns,seats};
+  return{id:z.id,name:z.name.trim(),elementId:z.elementId,rows:z.rows,columns:z.columns,...(z.layout?{layout:z.layout==='triangle'?'triangle':'rectangle'}:{}),seats};
  });
  if(total<1||total>10000)bad('전체 좌석은 1~10,000개로 설정해 주세요.');
  return{svg,zones};
