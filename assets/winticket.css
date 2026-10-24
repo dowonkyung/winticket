@@ -85,3 +85,6 @@ dialog::backdrop{background:#0008}dialog h2{font-size:23px;line-height:1.5;paddi
 .wrap_main_slider #slider:not(.carousel-ready) .list_slider{visibility:hidden}
 
 .home-empty{float:none!important;width:100%!important;text-align:center;padding:40px 0;color:#888;font:13px Dotum,돋움,sans-serif}.wrap_main_slider[hidden]{display:none!important}
+
+/* Align the supplied taller logo inside the existing header. */
+#header_wrap #logo{margin-top:12px}

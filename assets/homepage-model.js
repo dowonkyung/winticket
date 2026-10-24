@@ -1,6 +1,6 @@
 export const homeSections=[
  {key:'slider',label:'메인 페이지 슬라이더',limit:20,selector:'#sliderInner'},
- {key:'international',label:'내한공연',limit:5,selector:'#MAIN_B_CO_3'},
+ {key:'international',label:'내빛 공연',limit:5,selector:'#MAIN_B_CO_3'},
  {key:'upcoming',label:'오픈예정공연',limit:5,selector:'#MAIN_B_CO_2'},
  {key:'weekly',label:'이 주의 추천공연',limit:5,selector:'#MAIN_B_CO_1'},
  {key:'pick',label:'윈트티켓 PICK! 추천공연',limit:40,selector:'#perf_poster'}

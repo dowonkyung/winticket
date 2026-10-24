@@ -1,4 +1,4 @@
-import {homeSections} from './homepage-model.js?v=home-1';
+import {homeSections} from './homepage-model.js?v=brand-1';
 import {el,showLink} from './api.js?v=members-1';
 export function renderHomepage(sections,shows){
  if(!sections)return;const byId=new Map(shows.map(s=>[s.id,s]));

@@ -1,4 +1,4 @@
-import {homeSections,defaultHome} from './homepage-model.js?v=home-1';
+import {homeSections,defaultHome} from './homepage-model.js?v=brand-1';
 import {api,el} from './api.js?v=members-1';
 export function createHomepageEditor(root,{getShows,notify}){
  let version=0,sections=defaultHome(),busy=false,dirty=false;
