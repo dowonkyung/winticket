@@ -1,3 +1,4 @@
+import {initMainCarousel} from './main-carousel.js?v=carousel-4';
 import {catalog,showLink} from './api.js?v=members-1';
 (async() => {
  const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
@@ -28,19 +29,8 @@ import {catalog,showLink} from './api.js?v=members-1';
  function results(title,list){open(title);if(!list.length){body.append(text('p','검색 결과가 없습니다. 다른 공연명으로 검색해 주세요.'));return;}const grid=document.createElement('div');grid.className='results';list.forEach(record=>{const b=document.createElement('button');b.className='result-card';const i=document.createElement('img');i.src=record.image;i.alt='';b.append(i,text('span',record.title));b.addEventListener('click',()=>detail(record));grid.append(b);});body.append(grid);}
  function search(){const q=$('#top_search').value.trim()||'원더리벳';results('“'+q+'” 검색 결과',records.filter(r=>r.title.toLocaleLowerCase().includes(q.toLocaleLowerCase())));}
  $('#btn_top_search').addEventListener('click',search);$('#top_search').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();search();}});
- const slider=$('#sliderInner');let index=3;let paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
- const slides=$$('li',slider);slides.forEach(s=>s.classList.add('on'));
- const wideCarousel=matchMedia('(min-width:1151px)');
- function render(){const offset=wideCarousel.matches?3:0;slides.forEach((s,i)=>{const order=(i-index+offset+slides.length)%slides.length;s.style.order=String(order);s.classList.toggle('on',!offset||(order>=3&&order<7));});}
- wideCarousel.addEventListener('change',render);
- function step(delta){index=(index+delta+slides.length)%slides.length;render();}render();
- $('#slider>.prev').addEventListener('click',e=>{e.preventDefault();step(-1);});$('#slider>.next').addEventListener('click',e=>{e.preventDefault();step(1);});
- const play=$('#slider>.play'),stop=$('#slider>.stop');
- function playback(){play.style.display=paused?'block':'none';stop.style.display=paused?'none':'block';}playback();
- play.addEventListener('click',e=>{e.preventDefault();paused=false;playback();});stop.addEventListener('click',e=>{e.preventDefault();paused=true;playback();});
- let hovering=false;$('#slider').addEventListener('mouseenter',()=>hovering=true);$('#slider').addEventListener('mouseleave',()=>hovering=false);
+ initMainCarousel($('#slider'),dialog);
  const topLink=$('.wint-top');function toggleTop(){topLink?.classList.toggle('is-visible',scrollY>600);}window.addEventListener('scroll',toggleTop,{passive:true});toggleTop();
- setInterval(()=>{if(!paused&&!hovering&&!document.hidden&&!dialog.open&&!$('#slider').contains(document.activeElement))step(1);},6000);
  const tabs=$$('.list_main_performance>li');tabs.forEach(li=>$('.tit a',li).addEventListener('click',e=>{e.preventDefault();tabs.forEach(t=>t.classList.toggle('on',t===li));}));if(!tabs.some(t=>t.classList.contains('on')))tabs[0]?.classList.add('on');
  const rankTabs=$$('.list_main_rank>li');rankTabs.forEach(li=>$('h2 a',li)?.addEventListener('click',e=>{e.preventDefault();rankTabs.forEach(t=>t.classList.toggle('on',t===li));}));
  const banners=$$('.cmn_banner .item');let banner=Math.max(0,banners.findIndex(b=>b.style.display!=='none'));
