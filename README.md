@@ -42,3 +42,5 @@ npm test
 인증·권한, 동시 재고, 저장·조회·취소·영속성을 검사합니다. DB·업로드·계정 설정은 GitHub에서 제외합니다.
 
 회원 계정 운영 설정은 [MEMBERS.md](MEMBERS.md)를 참고하세요. 네이버 이메일·필수 닉네임 회원가입은 Supabase Auth를 사용하며 메일 발송용 SMTP 연결이 필요합니다.
+
+공연 상세 원본 디자인과 예매 전 주의사항 편집은 [PERFORMANCE.md](PERFORMANCE.md)를 참고하세요.
