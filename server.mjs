@@ -1,3 +1,4 @@
+import {defaultHome,validateHome,publicHome} from './assets/homepage-model.js';
 import {validateBookingNotice} from './assets/notice-model.js';
 import http from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
@@ -44,6 +45,9 @@ export async function createApplication(options={}){
  CREATE INDEX IF NOT EXISTS reservations_inventory ON reservations(show_id,session_id,grade_id,status);
  CREATE INDEX IF NOT EXISTS reservations_owner ON reservations(owner);`);
  if(!db.prepare('PRAGMA table_info(sessions)').all().some(c=>c.name==='owner')){db.exec("ALTER TABLE sessions ADD COLUMN owner TEXT NOT NULL DEFAULT ''; UPDATE sessions SET owner=token WHERE owner='';");}
+ db.exec("CREATE TABLE IF NOT EXISTS homepage(id INTEGER PRIMARY KEY CHECK(id=1),data TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1)");
+ db.prepare('INSERT OR IGNORE INTO homepage(id,data) VALUES(1,?)').run(JSON.stringify(defaultHome()));
+ const home=()=>{const r=db.prepare('SELECT * FROM homepage WHERE id=1').get();return {sections:JSON.parse(r.data),version:r.version};};
  if(!db.prepare('SELECT id FROM shows LIMIT 1').get()){
   const seed=JSON.parse(await readFile(path.join(root,'seed.json'),'utf8'));const insert=db.prepare('INSERT INTO shows(id,data) VALUES(?,?)');
   db.exec('BEGIN');try{for(const show of [...seed].reverse())insert.run(show.id,JSON.stringify(show));db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
@@ -91,6 +95,8 @@ export async function createApplication(options={}){
      db.prepare('DELETE FROM sessions WHERE expires<?').run(Date.now());const s=session||newSession(res);
      return json(res,200,{csrf:s.csrf,admin:s.admin||null,adminConfigured:!!db.prepare('SELECT username FROM admins LIMIT 1').get()});
     }
+    if(method==='GET'&&route==='/api/homepage')return json(res,200,{...home(),sections:publicHome(home().sections,allShows(true))});
+    if(method==='GET'&&route==='/api/admin/homepage'){requireAdmin(session);return json(res,200,home());}
     if(method==='GET'&&route==='/api/shows')return json(res,200,{shows:allShows(false)});
     const showMatch=route.match(/^\/api\/shows\/([a-zA-Z0-9_-]+)$/);
     if(method==='GET'&&showMatch){const show=getShow(showMatch[1]);if(!show.published&&!session?.admin)throw fail(404,'공연을 찾을 수 없습니다.');return json(res,200,{show,availability:availability(show)});}
@@ -118,6 +124,13 @@ export async function createApplication(options={}){
      if(!ext)throw fail(400,'PNG, JPEG, WebP 이미지만 지원합니다.');const name=randomBytes(16).toString('hex')+'.'+ext;await writeFile(path.join(data,'uploads',name),bytes,{flag:'wx'});return json(res,201,{url:'/uploads/'+name});
     }
     const editMatch=route.match(/^\/api\/admin\/shows\/([a-zA-Z0-9_-]+)$/);
+    if(route==='/api/admin/homepage'&&method==='PUT'){
+     requireAdmin(session);const p=await body(req),sections=validateHome(p.sections,allShows(true));
+     if(!Number.isInteger(p.version)||p.version<1)throw fail(400,'설정 버전을 확인해 주세요.');
+     const result=db.prepare('UPDATE homepage SET data=?,version=version+1 WHERE id=1 AND version=?').run(JSON.stringify(sections),p.version);
+     if(!result.changes)throw fail(409,'다른 창에서 수정되었습니다. 저장된 설정을 다시 불러와 주세요.');
+     return json(res,200,home());
+    }
     if(route==='/api/admin/shows'&&method==='POST'){
      requireAdmin(session);const v=validateShow(await body(req,150000),randomUUID());db.prepare('INSERT INTO shows(id,data) VALUES(?,?)').run(v.id,JSON.stringify(v));return json(res,201,{show:{...v,version:1}});
     }

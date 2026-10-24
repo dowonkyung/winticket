@@ -83,3 +83,5 @@ dialog::backdrop{background:#0008}dialog h2{font-size:23px;line-height:1.5;paddi
 .wrap_main_slider .list_slider li.on .thumb .frame{background:none;width:254px;height:318px;border:1px solid #000}
 .wrap_main_slider .slider_inner{overflow:visible!important}
 .wrap_main_slider #slider:not(.carousel-ready) .list_slider{visibility:hidden}
+
+.home-empty{float:none!important;width:100%!important;text-align:center;padding:40px 0;color:#888;font:13px Dotum,돋움,sans-serif}.wrap_main_slider[hidden]{display:none!important}

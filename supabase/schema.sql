@@ -22,6 +22,12 @@ alter table public.wt_reserved_seats enable row level security;
 revoke all on public.wt_reserved_seats from anon,authenticated;
 grant all on public.wt_reserved_seats to service_role;
 
+create table public.wt_homepage(id integer primary key check(id=1), sections jsonb not null, version integer not null default 1);
+alter table public.wt_homepage enable row level security;
+revoke all on public.wt_homepage from public,anon,authenticated;
+grant all on public.wt_homepage to service_role;
+insert into public.wt_homepage values(1,'{"slider":null,"international":null,"upcoming":null,"weekly":null,"pick":null}',1);
+
 create or replace function public.wt_gateway(p_route text,p_method text,p_token text,p_new_token text,p_body jsonb,p_ip text)
 returns jsonb language plpgsql security invoker set search_path='' as $$
 declare
@@ -35,6 +41,18 @@ begin
    insert into public.wt_sessions values(p_new_token,gen_random_uuid(),null,now()+interval '30 days') returning * into s;
   end if;
   return jsonb_build_object('admin',s.admin,'adminConfigured',exists(select 1 from public.wt_admins),'newSession',p_token is distinct from s.token_hash);
+ end if;
+ if p_route='/api/homepage' and p_method='GET' then
+  select sections,version into v,n from public.wt_homepage where id=1;
+  for sid in select jsonb_object_keys(v) loop
+   if jsonb_typeof(v->sid)='array' then
+    select coalesce(jsonb_agg(x.value order by x.ordinality),'[]'::jsonb) into a
+    from jsonb_array_elements(v->sid) with ordinality x
+    join public.wt_shows h on h.id=x.value#>>'{}' where (h.data->>'published')::boolean;
+    v=jsonb_set(v,array[sid],a);
+   end if;
+  end loop;
+  return jsonb_build_object('sections',v,'version',n);
  end if;
  if p_route='/api/shows' and p_method='GET' then
   return jsonb_build_object('shows',coalesce((select jsonb_agg((data-'seatMap')||jsonb_build_object('hasSeatMap',data->'seatMap' is not null and data->'seatMap'<>'null'::jsonb,'version',version) order by created desc,id) from public.wt_shows where (data->>'published')::boolean),'[]'::jsonb));
@@ -71,6 +89,27 @@ begin
   return jsonb_build_object('admin',null,'newSession',true);
  end if;
  if p_route like '/api/admin/%' and s.admin is null then return jsonb_build_object('error','관리자 로그인이 필요합니다.','status',401); end if;
+ if p_route='/api/admin/homepage' and p_method='GET' then
+  select sections,version into v,n from public.wt_homepage where id=1;
+  return jsonb_build_object('sections',v,'version',n);
+ end if;
+ if p_route='/api/admin/homepage' and p_method='PUT' then
+  v=p_body->'sections';
+  if jsonb_typeof(v) is distinct from 'object' then return jsonb_build_object('error','영역 설정을 확인해 주세요.','status',400); end if;
+  if (select count(*) from jsonb_object_keys(v))<>5 or not v ?& array['slider','international','upcoming','weekly','pick'] then return jsonb_build_object('error','다섯 영역을 모두 설정해 주세요.','status',400); end if;
+  for sid in select jsonb_object_keys(v) loop
+   if v->sid='null'::jsonb then continue; end if;
+   if jsonb_typeof(v->sid)<>'array' then return jsonb_build_object('error','공연 목록을 확인해 주세요.','status',400); end if;
+   lim=case sid when 'slider' then 20 when 'pick' then 40 else 5 end;
+   if jsonb_array_length(v->sid)>lim then return jsonb_build_object('error','영역별 최대 공연 수를 초과했습니다.','status',400); end if;
+   if exists(select 1 from jsonb_array_elements(v->sid) x where jsonb_typeof(x)<>'string' or not exists(select 1 from public.wt_shows h where h.id=x#>>'{}')) or (select count(distinct x) from jsonb_array_elements(v->sid) x)<>jsonb_array_length(v->sid) then return jsonb_build_object('error','중복되거나 존재하지 않는 공연입니다.','status',400); end if;
+  end loop;
+  if jsonb_typeof(p_body->'version') is distinct from 'number' or coalesce(p_body->>'version','') !~ '^[1-9][0-9]{0,8}$' then return jsonb_build_object('error','설정 버전을 확인해 주세요.','status',400); end if;
+  select version into n from public.wt_homepage where id=1 for update;
+  if n<>(p_body->>'version')::integer then return jsonb_build_object('error','다른 창에서 수정되었습니다. 저장된 설정을 다시 불러와 주세요.','status',409); end if;
+  update public.wt_homepage set sections=v,version=version+1 where id=1 returning version into n;
+  return jsonb_build_object('sections',v,'version',n);
+ end if;
  if p_route='/api/admin/password' and p_method='POST' then
   if not exists(select 1 from public.wt_admins where username=s.admin and password_hash=extensions.crypt(p_body->>'currentPassword',password_hash)) then return jsonb_build_object('error','현재 비밀번호를 확인해 주세요.','status',401); end if;
   update public.wt_admins set password_hash=extensions.crypt(p_body->>'newPassword',extensions.gen_salt('bf',12)) where username=s.admin;

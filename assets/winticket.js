@@ -1,5 +1,6 @@
 import {initMainCarousel} from './main-carousel.js?v=carousel-4';
-import {catalog,showLink} from './api.js?v=members-1';
+import {renderHomepage} from './homepage-render.js?v=home-1';
+import {api,catalog,showLink} from './api.js?v=members-1';
 (async() => {
  const $=(s,p=document)=>p.querySelector(s), $$=(s,p=document)=>[...p.querySelectorAll(s)];
  const dialog=$('#site-dialog'), body=$('#dialog-body'), heading=$('#dialog-title');
@@ -8,10 +9,11 @@ import {catalog,showLink} from './api.js?v=members-1';
  dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
  const note='현재 윈트티켓 메인 페이지 시안입니다. 실제 예매·결제 기능은 준비 중입니다.';
  function text(tag,value,cls){const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e;}
- let shows=[];try{shows=(await catalog()).shows;}catch{}
+ let shows=[],homepage;await Promise.allSettled([catalog().then(data=>{shows=data.shows;}),api('/api/homepage').then(data=>{homepage=data.sections;})]);
  const matchShow=record=>shows.find(s=>s.id===record.id||s.poster===record.image||s.legacyPoster===record.image||s.title===record.title);
  const posterList=$('#perf_poster');
  if(shows.length&&posterList){posterList.replaceChildren();shows.forEach(s=>{const li=document.createElement('li'),a=document.createElement('a');a.className='inner';a.href=showLink(s.id);const thumb=document.createElement('span');thumb.className='thumb';const image=document.createElement('img');image.src=s.poster;image.alt=s.title;image.loading='lazy';thumb.append(image);a.append(thumb,text('strong',s.title,'tit'),text('span',s.period,'day'),text('span',s.venue,'location'));li.append(a);posterList.append(li);});}
+ renderHomepage(homepage,shows);
  const records=[];const seen=new Set();
  $$('#cont_wrap a').forEach(a=>{
    const li=a.closest('li'), image=$('img',a)|| (li&&$('img',li));

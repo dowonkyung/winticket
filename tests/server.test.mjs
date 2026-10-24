@@ -26,6 +26,18 @@ test('persistent admin catalog and reservation workflow',async t=>{
  await t.test('admin creates a concert, public visitors see the same record',async()=>{
   const r=await admin.request('/api/admin/shows','POST',fixture);assert.equal(r.status,201);show=r.body.show;assert.ok(show.id);const publicShow=await guest.request('/api/shows/'+show.id);assert.equal(publicShow.body.show.title,fixture.title);assert.equal(publicShow.body.availability.first.general,3);assert.ok((await guest.request('/api/shows')).body.shows.some(s=>s.id===show.id));
  });
+ await t.test('homepage selections require admin, persist order, reject stale saves and filter hidden shows',async()=>{
+  assert.equal((await guest.request('/api/admin/homepage')).status,401);
+  assert.equal((await guest.request('/api/admin/homepage','PUT',{})).status,401);
+  const hidden=(await admin.request('/api/admin/shows','POST',{...fixture,title:'편성 비공개',published:false})).body.show;
+  const home=await admin.request('/api/admin/homepage');assert.equal(home.body.sections.slider,null);
+  const sections={slider:[show.id,hidden.id],international:[show.id],upcoming:[],weekly:[show.id],pick:[show.id]};
+  let result=await admin.request('/api/admin/homepage','PUT',{sections,version:home.body.version});assert.equal(result.status,200);assert.deepEqual(result.body.sections,sections);
+  const publicResult=await guest.request('/api/homepage');assert.deepEqual(publicResult.body.sections.slider,[show.id]);assert.deepEqual(publicResult.body.sections.upcoming,[]);
+  assert.equal((await admin.request('/api/admin/homepage','PUT',{sections,version:home.body.version})).status,409);
+  for(const invalid of [{...sections,pick:['missing']},{...sections,slider:[show.id,show.id]},{...sections,weekly:Array(6).fill(show.id)},{slider:[]}])assert.equal((await admin.request('/api/admin/homepage','PUT',{sections:invalid,version:result.body.version})).status,400);
+  await app.close();await start();assert.deepEqual((await admin.request('/api/admin/homepage')).body.sections,sections);
+ });
  await t.test('schema validation rejects malformed dates, prices and image paths',async()=>{
   for(const changes of [{sessions:[{date:'2090-02-30',time:'18:00'}]},{sessions:[{date:'2090-99-99',time:'25:00'}]},{poster:'javascript:alert(1)'},{grades:[{id:'x',name:'R',price:-1,capacity:3}]}])assert.equal((await admin.request('/api/admin/shows','POST',{...fixture,...changes})).status,400);
  });
