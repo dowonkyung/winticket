@@ -9,7 +9,7 @@ async function request(url,{method='GET',body,csrf}={}){
  else if(csrf)headers['X-CSRF-Token']=csrf;
  const response=await fetch((cloud?API_BASE:'')+url,{method,headers,credentials:cloud?'omit':'same-origin',cache:'no-store',body:body===undefined?undefined:JSON.stringify(body)});
  let result;try{result=await response.json();}catch{throw new Error('서버에 연결할 수 없습니다. 잠시 뒤 다시 시도해 주세요.');}
- if(!response.ok){if(response.status===401&&access)clearMember();const e=new Error(result.error||'요청을 처리하지 못했습니다.');e.status=response.status;throw e;}
+ if(!response.ok){if(response.status===401&&access)clearMember();const e=new Error(result.error||'요청을 처리하지 못했습니다.');e.status=response.status;e.certificationRequired=result.certificationRequired===true;throw e;}
  if(cloud&&result.token){localStorage.setItem(storageKey,result.token);delete result.token;}
  return result;
 }

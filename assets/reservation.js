@@ -1,7 +1,9 @@
+import {createBookingCertification} from './booking-certification.js?v=certification-1';
 import {API_BASE} from './config.js?v=members-1';
-import {api,session,el,money,dateLabel} from './api.js?v=members-1';
+import {api,session,el,money,dateLabel} from './api.js?v=certification-1';
 import {mapElement,bindZones,flattenSeats,seatLabel} from './seat-model.js?v=seats-1';
 const $=s=>document.querySelector(s),params=new URLSearchParams(location.search),id=params.get('id');
+let certification;
 let show,availability={},occupied={},sid=params.get('session')||'',zoneId='',selected=new Set(),gradeId='',quantity=0,zoom=1,confirming=false,busy=false,preview=false,loaded=false,completed=false;
 const error=m=>{$('#popup-error').textContent=m;$('#popup-error').hidden=!m;};
 const notice=m=>{$('#popup-notice').textContent=m;$('#popup-notice').hidden=!m;};
@@ -44,8 +46,8 @@ function confirm(){
  const box=$('#popup-confirm');box.replaceChildren(el('h2','선택 내역 확인'));const schedule=show.sessions.find(s=>s.id===sid);box.append(el('p',dateLabel(schedule.date)+' '+schedule.time));const list=el('ul');if(show.seatMap)chosen().forEach(s=>list.append(el('li',seatLabel(s)+' · '+show.grades.find(g=>g.id===s.gradeId)?.name)));else list.append(el('li',(show.grades.find(g=>g.id===gradeId)?.name||'')+' '+quantity+'매'));box.append(list,el('strong','공연 금액 '+money(amount())),el('p','결제·발권 없이 예매 신청을 저장합니다. 현재 금액은 청구되지 않습니다.'));const label=el('label'),check=el('input');check.type='checkbox';check.id='popup-agreement';label.append(check,document.createTextNode('결제·발권이 없는 예매 신청임을 확인했습니다.'));box.append(label);const back=el('button','좌석 다시 선택');back.type='button';back.addEventListener('click',()=>{confirming=false;renderSelection();});box.append(back);confirming=true;renderSelection();box.scrollIntoView({block:'nearest'});
 }
 $('#seat-next').addEventListener('click',async()=>{
- if(busy||preview||completed)return;error('');if(!confirming){confirm();return;}if(!$('#popup-agreement')?.checked){error('신청 안내를 확인해 주세요.');return;}
- busy=true;renderSelection();try{await session();const body={showId:show.id,sessionId:sid,showVersion:show.version};if(show.seatMap)body.seatIds=[...selected];else Object.assign(body,{gradeId,quantity});const result=await api('/api/reservations',{method:'POST',body});completed=true;$('#reservation-shell').classList.add('popup-receipt');const box=$('#popup-confirm');box.hidden=false;box.replaceChildren(el('h2','예매 신청이 저장되었습니다'),el('p',result.reservation.id),el('p',result.message));const link=el('a','마이티켓에서 신청 확인');link.href='myticket.html';box.append(link);notice('신청이 저장되었습니다. 결제·발권은 진행되지 않았습니다.');drawSeats();}catch(e){error(e.message);confirming=false;await refresh().catch(()=>{});}finally{busy=false;if(!completed)renderSelection();else{$('#seat-next').disabled=true;$('#seat-next').textContent='신청 저장 완료';}}
+ if(busy||preview||completed)return;if(certification&&!await certification.require())return;error('');if(!confirming){confirm();return;}if(!$('#popup-agreement')?.checked){error('신청 안내를 확인해 주세요.');return;}
+ busy=true;renderSelection();try{await session();const body={showId:show.id,sessionId:sid,showVersion:show.version,bookingProof:certification?.proof};if(show.seatMap)body.seatIds=[...selected];else Object.assign(body,{gradeId,quantity});const result=await api('/api/reservations',{method:'POST',body});completed=true;$('#reservation-shell').classList.add('popup-receipt');const box=$('#popup-confirm');box.hidden=false;box.replaceChildren(el('h2','예매 신청이 저장되었습니다'),el('p',result.reservation.id),el('p',result.message));const link=el('a','마이티켓에서 신청 확인');link.href='myticket.html';box.append(link);notice('신청이 저장되었습니다. 결제·발권은 진행되지 않았습니다.');drawSeats();}catch(e){error(e.message);if(e.certificationRequired){certification??=createBookingCertification(show.id,{preview,canDefer:!!show.seatMap});await certification.reset();}confirming=false;await refresh().catch(()=>{});}finally{busy=false;if(!completed)renderSelection();else{$('#seat-next').disabled=true;$('#seat-next').textContent='신청 저장 완료';}}
 });
 $('#popup-session').addEventListener('change',async()=>{sid=$('#popup-session').value;selected.clear();quantity=0;gradeId='';confirming=false;error('');render();await refresh().catch(e=>error(e.message));});
 $('#seat-refresh').addEventListener('click',async()=>{error('');try{await refresh();}catch(e){error(e.message);}});
@@ -56,5 +58,6 @@ window.addEventListener('focus',()=>{if(loaded&&!completed&&!preview)refresh().c
 try{
  const previewKey=params.get('preview');if(previewKey){const saved=JSON.parse(localStorage.getItem('winticket-preview-'+previewKey)||'null');if(!saved||Date.now()-saved.created>1200000)throw new Error('미리보기 유효기간이 지났습니다. 관리자에서 다시 열어 주세요.');show=saved.show;preview=true;sid=show.sessions[0]?.id||'';occupied={};availability=Object.fromEntries(show.sessions.map(s=>[s.id,Object.fromEntries(show.grades.map(g=>[g.id,show.seatMap?seats().filter(x=>!x.blocked&&x.gradeId===g.id).length:g.capacity]))]));notice('관리자 미리보기 · 저장 전 화면이며 신청은 진행되지 않습니다.');render();}
  else{if(!id)throw new Error('공연 정보가 없습니다.');const account=await session(true);if(API_BASE&&!account.member){location.replace('login.html?next='+encodeURIComponent('reservation.html'+location.search));throw new Error('로그인 페이지로 이동합니다.');}await refresh();}
+ if(show.certifiedBooking!==false){certification=createBookingCertification(show.id,{preview,canDefer:!!show.seatMap});await certification.open();}
  loaded=true;$('#reservation-shell').setAttribute('aria-busy','false');
 }catch(e){error(e.message);$('#popup-title').textContent='공연을 불러오지 못했습니다.';$('#reservation-shell').setAttribute('aria-busy','false');}

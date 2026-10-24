@@ -1,3 +1,4 @@
+import {bookingChallenge} from './booking-challenge.js';
 import {DOMParser,XMLSerializer} from 'npm:@xmldom/xmldom@0.9.12';
 import {createClient} from 'npm:@supabase/supabase-js@2.95.3';
 import {validateSeatTemplate} from '../../../assets/seat-template-model.js';
@@ -9,6 +10,7 @@ const db=createClient(base,Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,{auth:{per
 const allowed=new Set(['https://winticket.saevit.online','https://dowonkyung.github.io','http://127.0.0.1:4173','http://localhost:4173']);
 const hex=(a:Uint8Array)=>Array.from(a,x=>x.toString(16).padStart(2,'0')).join('');
 const hash=async(s:string)=>hex(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s))));
+const challenges=bookingChallenge(Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 Deno.serve(async req=>{
  const origin=req.headers.get('origin')||'';
  const headers={'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store','Vary':'Origin','Access-Control-Allow-Origin':allowed.has(origin)?origin:'https://winticket.saevit.online','Access-Control-Allow-Headers':'authorization,apikey,content-type,x-wint-session','Access-Control-Allow-Methods':'GET,POST,PUT,OPTIONS'};
@@ -42,7 +44,7 @@ Deno.serve(async req=>{
   if(path==='/api/reservations'&&req.method==='POST'&&!Array.isArray(body.seatIds)&&(!Number.isInteger(body.quantity)||body.quantity<1||body.quantity>10||!['showId','sessionId','gradeId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'공연·회차·수량을 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.seatIds!==undefined&&(!Array.isArray(body.seatIds)||body.seatIds.length<1||body.seatIds.length>10||new Set(body.seatIds).size!==body.seatIds.length||!body.seatIds.every(s=>typeof s==='string'&&/^[-\w]{1,100}$/.test(s))||!['showId','sessionId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'선택한 좌석 정보를 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.showVersion!==undefined&&(!Number.isInteger(body.showVersion)||body.showVersion<1))return respond({error:'공연 정보 버전을 확인해 주세요.'},400);
-  let gatewayToken=rawToken?await hash(rawToken):'',member:any=null;
+  let gatewayToken=rawToken?await hash(rawToken):'',member:any=null,bookingSession='';
   const authorization=req.headers.get('authorization');
   if(authorization){
    if(!authorization.startsWith('Bearer ')||authorization.length>8192)return respond({error:'다시 로그인해 주세요.'},401);
@@ -55,10 +57,25 @@ Deno.serve(async req=>{
    const {data:profile,error:profileError}=await db.rpc('wt_member_session',{p_token:gatewayToken,p_user:identity.user.id,p_session:claims.session_id,p_expires:new Date(claims.exp*1000).toISOString()});
    if(profileError)return respond({error:'회원 정보를 확인하지 못했습니다.'},500);
    if(profile.error)return respond(profile,profile.status||401);
-   member=profile;
+   member=profile;bookingSession=claims.session_id;
    if(path.startsWith('/api/admin/'))return respond({error:'별도 관리자 계정으로 로그인해 주세요.'},403);
   }
   if(path==='/api/reservations'&&req.method==='POST'&&!member)return respond({error:'로그인 후 예매해 주세요.','loginRequired':true},401);
+  if(path==='/api/booking-challenge'&&req.method==='POST'){
+   if(!member)return respond({error:'로그인 후 인증해 주세요.'},401);
+   if(typeof body.showId!=='string'||!/^[-\w]{1,80}$/.test(body.showId))return respond({error:'공연 정보를 확인해 주세요.'},400);
+   const service=await challenges;
+   if(body.action==='verify'){
+    const proof=await service.verify(body.challenge,body.answer,bookingSession,body.showId);
+    return proof?respond({proof}):respond({error:'문자를 정확히 입력해 주세요. 인증 유효시간은 5분입니다.'},400);
+   }
+   return respond(await service.issue(bookingSession,body.showId));
+  }
+  if(path==='/api/reservations'&&req.method==='POST'){
+   const {data:performance,error:showError}=await db.from('wt_shows').select('data').eq('id',body.showId).maybeSingle();
+   if(showError)return respond({error:'공연 정보를 확인하지 못했습니다.'},500);
+   if(performance&&performance.data.certifiedBooking!==false&&!await (await challenges).valid(body.bookingProof,bookingSession,body.showId))return respond({error:'인증예매 보안문자를 다시 입력해 주세요.',certificationRequired:true},403);
+  }
   const {data,error}=await db.rpc('wt_gateway',{p_route:path,p_method:req.method,p_token:gatewayToken,p_new_token:await hash(fresh),p_body:path==='/api/admin/uploads'?{}:body,p_ip:await hash(req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'unknown')});
   if(error){console.error('gateway',error.code,error.message);return respond({error:'서버에서 요청을 처리하지 못했습니다.'},500);}
   if(data.error)return respond({error:data.error},data.status||400);
