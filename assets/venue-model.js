@@ -1,11 +1,11 @@
-export const mapHosts=['www.google.com','maps.google.com','maps.google.co.kr','map.naver.com','maps.naver.com','m.map.naver.com','map.kakao.com','maps.kakao.com','www.openstreetmap.org'];
+export const mapHosts=['saevit.online','www.google.com','maps.google.com','maps.google.co.kr','map.naver.com','maps.naver.com','m.map.naver.com','map.kakao.com','maps.kakao.com','www.openstreetmap.org'];
 const fail=message=>{throw Object.assign(new Error(message),{status:400});};
 function text(v,max){if(typeof v!=='string'||v.length>max)fail('공연장 입력값의 형식과 길이를 확인해 주세요.');return v.trim();}
 export function mapEmbedUrl(raw=''){
  let value=text(raw,6000);if(!value)return '';
  if(value.startsWith('<')){const match=value.match(/^<iframe\b[^>]*\bsrc\s*=\s*(["'])(.*?)\1[^>]*>\s*<\/iframe>\s*$/is);if(!match)fail('iframe 코드 또는 지도 삽입 주소를 입력해 주세요.');value=match[2].replace(/&amp;/gi,'&');}
  let url;try{url=new URL(value);}catch{fail('공연장 위치 iframe 주소를 확인해 주세요.');}
- if(url.protocol!=='https:'||url.username||url.password||url.port||!mapHosts.includes(url.hostname))fail('HTTPS 지도 삽입 주소를 사용해 주세요. Google 지도, 네이버 지도, 카카오맵, OpenStreetMap을 지원합니다.');
+ if(url.protocol!=='https:'||url.username||url.password||url.port||!mapHosts.includes(url.hostname))fail('HTTPS 지도 삽입 주소를 사용해 주세요. 새빛 지도, Google 지도, 네이버 지도, 카카오맵, OpenStreetMap을 지원합니다.');
  if(value.length>4000)fail('지도 주소는 4,000자 이하로 입력해 주세요.');return url.href;
 }
 export function validateVenue(raw,id){

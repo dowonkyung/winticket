@@ -1,4 +1,4 @@
-import {venueFields} from './venue-model.js?v=venues-1';
+import {venueFields} from './venue-model.js?v=saevit-map-1';
 import {createVenueEditor} from './venue-editor.js?v=venues-1';
 import {createHomepageEditor} from './homepage-editor.js?v=brand-1';
 import {createNoticeEditor} from './notice-editor.js?v=reference-2';
