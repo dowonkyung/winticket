@@ -1,4 +1,5 @@
 import {defaultHome,validateHome,publicHome} from './assets/homepage-model.js';
+import {mapEmbedUrl,validateVenue,venueFields} from './assets/venue-model.js';
 import {validateBookingNotice} from './assets/notice-model.js';
 import http from 'node:http';
 import { DatabaseSync } from 'node:sqlite';
@@ -21,6 +22,7 @@ function validateShow(raw,id){
  const v={id,title:string(raw.title,200),category:string(raw.category,50),poster:imagePath(raw.poster),detailImage:imagePath(raw.detailImage||''),venue:string(raw.venue,200),address:string(raw.address||'',300),age:string(raw.age||'',100),duration:string(raw.duration||'',100),artist:string(raw.artist||'',300),organizer:string(raw.organizer||'',300),description:string(raw.description||'',20000),notice:string(raw.notice||'',20000),salesStart:string(raw.salesStart||'',16),maxTickets:integer(raw.maxTickets,1,10),published:raw.published===true,exclusive:raw.exclusive===true};
  for(const name of ['noticeImage','noticeImage2','artistImage','venueImage'])v[name]=imagePath(raw[name]||'');
  v.bookingNotice=validateBookingNotice(raw.bookingNotice);v.dateView=raw.dateView==='calendar'?'calendar':'list';v.certifiedBooking=raw.certifiedBooking!==false;
+ v.venueId=string(raw.venueId||'',80);v.venueMapUrl=mapEmbedUrl(raw.venueMapUrl||'');
  v.venuePhone=string(raw.venuePhone||'',80);v.venueWebsite=string(raw.venueWebsite||'',500);
  if(v.venueWebsite){let u;try{u=new URL(v.venueWebsite);}catch{throw fail(400,'공연장 홈페이지 URL을 확인해 주세요.');}if(u.protocol!=='https:'||u.username||u.password)throw fail(400,'공연장 홈페이지는 HTTPS 주소를 입력해 주세요.');}
  for(const [key,max] of [['venueLat',90],['venueLng',180]]){const value=raw[key];if(value===undefined||value===null||value==='')v[key]='';else{const n=Number(value);if(!Number.isFinite(n)||Math.abs(n)>max)throw fail(400,'공연장 지도 좌표를 확인해 주세요.');v[key]=String(n);}}
@@ -52,6 +54,11 @@ export async function createApplication(options={}){
   const seed=JSON.parse(await readFile(path.join(root,'seed.json'),'utf8'));const insert=db.prepare('INSERT INTO shows(id,data) VALUES(?,?)');
   db.exec('BEGIN');try{for(const show of [...seed].reverse())insert.run(show.id,JSON.stringify(show));db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
  }
+ db.exec('CREATE TABLE IF NOT EXISTS venues(id TEXT PRIMARY KEY,data TEXT NOT NULL,version INTEGER NOT NULL DEFAULT 1)');
+ const allVenues=()=>db.prepare('SELECT * FROM venues ORDER BY rowid DESC').all().map(r=>({...JSON.parse(r.data),version:r.version}));
+ const getVenue=id=>{const v=allVenues().find(v=>v.id===id);if(!v)throw fail(400,'등록된 공연장을 선택해 주세요.');return v;};
+ for(const row of db.prepare('SELECT * FROM shows').all()){const s=JSON.parse(row.data);if(s.venueId||!s.venue)continue;let v=allVenues().find(v=>v.name===s.venue);if(!v){v={id:randomUUID(),name:s.venue,logo:s.venueImage||'',address:s.address||'',phone:s.venuePhone||'',website:s.venueWebsite||'',mapUrl:''};db.prepare('INSERT INTO venues(id,data) VALUES(?,?)').run(v.id,JSON.stringify(v));}s.venueId=v.id;db.prepare('UPDATE shows SET data=? WHERE id=?').run(JSON.stringify(s),s.id);}
+ const resolveVenue=s=>s.venueId?{...s,...venueFields(getVenue(s.venueId))}:s;
  const username=options.adminUsername||process.env.WINTICKET_ADMIN_USERNAME,password=options.adminPassword||process.env.WINTICKET_ADMIN_PASSWORD;
  if(password&&username&&!db.prepare('SELECT username FROM admins LIMIT 1').get()){
   if(!/^[a-zA-Z0-9_.-]{3,64}$/.test(username)||password.length<12)throw new Error('관리자 아이디는 3~64자 영문/숫자, 비밀번호는 12자 이상이어야 합니다.');
@@ -62,7 +69,7 @@ export async function createApplication(options={}){
  const secureCookie=configuredOrigin.startsWith('https://');
  const rates=new Map();
  const getShow=id=>{const row=db.prepare('SELECT * FROM shows WHERE id=?').get(id);if(!row)throw fail(404,'공연을 찾을 수 없습니다.');return{...JSON.parse(row.data),version:row.version};};
- const allShows=admin=>db.prepare('SELECT * FROM shows ORDER BY rowid DESC').all().map(r=>({...JSON.parse(r.data),version:r.version})).filter(s=>admin||s.published);
+ const allShows=(admin,includeDeleted=false)=>db.prepare('SELECT * FROM shows ORDER BY rowid DESC').all().map(r=>({...JSON.parse(r.data),version:r.version})).filter(s=>(includeDeleted||!s.deletedAt)&&(admin||s.published));
  const remaining=(id,sid,gid,capacity)=>capacity-Number(db.prepare("SELECT COALESCE(SUM(quantity),0) AS n FROM reservations WHERE show_id=? AND session_id=? AND grade_id=? AND status='requested'").get(id,sid,gid).n);
  const availability=show=>Object.fromEntries(show.sessions.map(s=>[s.id,Object.fromEntries(show.grades.map(g=>[g.id,remaining(show.id,s.id,g.id,g.capacity)]))]));
  const json=(res,status,value)=>{res.writeHead(status,{'Content-Type':'application/json; charset=utf-8','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
@@ -85,7 +92,7 @@ export async function createApplication(options={}){
  const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.svg':'image/svg+xml','.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.gif':'image/gif','.ico':'image/x-icon'};
  const server=http.createServer(async(req,res)=>{
   res.setHeader('X-Content-Type-Options','nosniff');res.setHeader('X-Frame-Options','DENY');res.setHeader('Referrer-Policy','strict-origin-when-cross-origin');
-  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://ahchwkcszyphbmppctbt.supabase.co; connect-src 'self' https://ahchwkcszyphbmppctbt.supabase.co; frame-src https://www.openstreetmap.org; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
+  res.setHeader('Content-Security-Policy',"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://ahchwkcszyphbmppctbt.supabase.co; connect-src 'self' https://ahchwkcszyphbmppctbt.supabase.co; frame-src https://www.openstreetmap.org https://www.google.com https://maps.google.com https://maps.google.co.kr https://map.naver.com https://maps.naver.com https://m.map.naver.com https://map.kakao.com https://maps.kakao.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'");
   try{
    const url=new URL(req.url,'http://localhost'),route=url.pathname,method=req.method;
    if(method==='GET'&&route==='/healthz'){db.prepare('SELECT 1').get();return json(res,200,{ok:true});}
@@ -97,10 +104,11 @@ export async function createApplication(options={}){
     }
     if(method==='GET'&&route==='/api/homepage')return json(res,200,{...home(),sections:publicHome(home().sections,allShows(true))});
     if(method==='GET'&&route==='/api/admin/homepage'){requireAdmin(session);return json(res,200,home());}
-    if(method==='GET'&&route==='/api/shows')return json(res,200,{shows:allShows(false)});
+    if(method==='GET'&&route==='/api/shows')return json(res,200,{shows:allShows(false),retiredPosters:allShows(true,true).filter(s=>s.deletedAt&&s.deletedWasPublished).flatMap(s=>[s.poster,s.legacyPoster]).filter(p=>p&&!allShows(false).some(s=>s.poster===p||s.legacyPoster===p))});
     const showMatch=route.match(/^\/api\/shows\/([a-zA-Z0-9_-]+)$/);
-    if(method==='GET'&&showMatch){const show=getShow(showMatch[1]);if(!show.published&&!session?.admin)throw fail(404,'공연을 찾을 수 없습니다.');return json(res,200,{show,availability:availability(show)});}
-    if(method==='GET'&&route==='/api/admin/shows'){requireAdmin(session);return json(res,200,{shows:allShows(true)});}
+    if(method==='GET'&&showMatch){const show=getShow(showMatch[1]);if(show.deletedAt||(!show.published&&!session?.admin))throw fail(404,'공연을 찾을 수 없습니다.');return json(res,200,{show,availability:availability(show)});}
+    if(method==='GET'&&route==='/api/admin/venues'){requireAdmin(session);return json(res,200,{venues:allVenues()});}
+    if(method==='GET'&&route==='/api/admin/shows'){requireAdmin(session);return json(res,200,{shows:allShows(true),deletedShows:allShows(true,true).filter(s=>s.deletedAt)});}
     if(method==='GET'&&route==='/api/reservations'){
      if(!session)return json(res,200,{reservations:[]});
      return json(res,200,{reservations:db.prepare('SELECT id,quantity,amount,status,snapshot,created FROM reservations WHERE owner=? ORDER BY created DESC').all(session.owner).map(r=>({...r,snapshot:JSON.parse(r.snapshot)}))});
@@ -123,19 +131,33 @@ export async function createApplication(options={}){
      const ext=bytes.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10]))?'png':bytes[0]===255&&bytes[1]===216&&bytes[2]===255?'jpg':bytes.subarray(0,4).toString()==='RIFF'&&bytes.subarray(8,12).toString()==='WEBP'?'webp':null;
      if(!ext)throw fail(400,'PNG, JPEG, WebP 이미지만 지원합니다.');const name=randomBytes(16).toString('hex')+'.'+ext;await writeFile(path.join(data,'uploads',name),bytes,{flag:'wx'});return json(res,201,{url:'/uploads/'+name});
     }
+    const venueMatch=route.match(/^\/api\/admin\/venues\/([a-zA-Z0-9_-]+)$/);
+    if((route==='/api/admin/venues'&&method==='POST')||(venueMatch&&method==='PUT')){
+     requireAdmin(session);const raw=await body(req,20000),id=venueMatch?venueMatch[1]:randomUUID(),v=validateVenue(raw,id);
+     if(venueMatch){const old=getVenue(id);if(raw.version!==old.version)throw fail(409,'공연장 정보가 변경되었습니다. 다시 불러와 주세요.');
+      db.exec('BEGIN IMMEDIATE');try{db.prepare('UPDATE venues SET data=?,version=version+1 WHERE id=?').run(JSON.stringify(v),id);for(const s of allShows(true,true).filter(s=>s.venueId===id))db.prepare('UPDATE shows SET data=?,version=version+1 WHERE id=?').run(JSON.stringify({...s,...venueFields(v)}),s.id);db.exec('COMMIT');}catch(e){db.exec('ROLLBACK');throw e;}
+     }else db.prepare('INSERT INTO venues(id,data) VALUES(?,?)').run(id,JSON.stringify(v));
+     return json(res,venueMatch?200:201,{venue:getVenue(id)});
+    }
+    const deleteMatch=route.match(/^\/api\/admin\/shows\/([a-zA-Z0-9_-]+)\/(delete|restore)$/);
+    if(deleteMatch&&method==='POST'){requireAdmin(session);const raw=await body(req,1000),s=getShow(deleteMatch[1]);if(raw.version!==s.version)throw fail(409,'공연 정보가 변경되었습니다. 다시 불러와 주세요.');
+     if(deleteMatch[2]==='delete'){if(s.deletedAt)throw fail(409,'이미 삭제된 공연입니다.');s.deletedAt=new Date().toISOString();s.deletedWasPublished=s.published;s.published=false;}
+     else {if(!s.deletedAt)throw fail(409,'삭제된 공연이 아닙니다.');s.published=s.deletedWasPublished===true;delete s.deletedAt;delete s.deletedWasPublished;}
+     db.prepare('UPDATE shows SET data=?,version=version+1 WHERE id=?').run(JSON.stringify(s),s.id);return json(res,200,{show:getShow(s.id)});
+    }
     const editMatch=route.match(/^\/api\/admin\/shows\/([a-zA-Z0-9_-]+)$/);
     if(route==='/api/admin/homepage'&&method==='PUT'){
-     requireAdmin(session);const p=await body(req),sections=validateHome(p.sections,allShows(true));
+     requireAdmin(session);const p=await body(req),sections=validateHome(p.sections,allShows(true,true));
      if(!Number.isInteger(p.version)||p.version<1)throw fail(400,'설정 버전을 확인해 주세요.');
      const result=db.prepare('UPDATE homepage SET data=?,version=version+1 WHERE id=1 AND version=?').run(JSON.stringify(sections),p.version);
      if(!result.changes)throw fail(409,'다른 창에서 수정되었습니다. 저장된 설정을 다시 불러와 주세요.');
      return json(res,200,home());
     }
     if(route==='/api/admin/shows'&&method==='POST'){
-     requireAdmin(session);const v=validateShow(await body(req,150000),randomUUID());db.prepare('INSERT INTO shows(id,data) VALUES(?,?)').run(v.id,JSON.stringify(v));return json(res,201,{show:{...v,version:1}});
+     requireAdmin(session);const v=resolveVenue(validateShow(await body(req,150000),randomUUID()));db.prepare('INSERT INTO shows(id,data) VALUES(?,?)').run(v.id,JSON.stringify(v));return json(res,201,{show:{...v,version:1}});
     }
     if(editMatch&&method==='PUT'){
-     requireAdmin(session);const raw=await body(req,150000),old=getShow(editMatch[1]);if(raw.version!==old.version)throw fail(409,'다른 창에서 수정되었습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요.');const v=validateShow(raw,old.id);protectInventory(old,v);
+     requireAdmin(session);const raw=await body(req,150000),old=getShow(editMatch[1]);if(raw.version!==old.version)throw fail(409,'다른 창에서 수정되었습니다. 최신 정보를 불러온 뒤 다시 저장해 주세요.');if(old.deletedAt)throw fail(409,'삭제된 공연은 복원 후 수정해 주세요.');const v=resolveVenue(validateShow(raw,old.id));protectInventory(old,v);
      if(old.legacyPoster)v.legacyPoster=old.legacyPoster;const r=db.prepare('UPDATE shows SET data=?,version=version+1 WHERE id=? AND version=?').run(JSON.stringify(v),old.id,old.version);if(!r.changes)throw fail(409,'공연 정보가 변경되었습니다.');return json(res,200,{show:{...v,version:old.version+1}});
     }
     if(route==='/api/reservations'&&method==='POST'){

@@ -28,8 +28,19 @@ revoke all on public.wt_homepage from public,anon,authenticated;
 grant all on public.wt_homepage to service_role;
 insert into public.wt_homepage values(1,'{"slider":null,"international":null,"upcoming":null,"weekly":null,"pick":null}',1);
 
-create or replace function public.wt_gateway(p_route text,p_method text,p_token text,p_new_token text,p_body jsonb,p_ip text)
-returns jsonb language plpgsql security invoker set search_path='' as $$
+create table public.wt_venues(id text primary key,data jsonb not null,version integer not null default 1,created timestamptz not null default now());
+alter table public.wt_venues enable row level security;
+revoke all on public.wt_venues from public,anon,authenticated;
+grant all on public.wt_venues to service_role;
+insert into public.wt_venues(id,data)
+select id,jsonb_build_object('id',id,'name',name,'logo',logo,'address',address,'phone',phone,'website',website,'mapUrl',mapurl)
+from (select gen_random_uuid()::text id, data->>'venue' name,coalesce(max(data->>'venueImage'),'') logo,coalesce(max(data->>'address'),'') address,coalesce(max(data->>'venuePhone'),'') phone,coalesce(max(data->>'venueWebsite'),'') website,coalesce(max(data->>'venueMapUrl'),'') mapurl from public.wt_shows where coalesce(data->>'venue','')<>'' group by data->>'venue') x;
+update public.wt_shows h set data=h.data||jsonb_build_object('venueId',v.id),version=h.version+1 from public.wt_venues v where h.data->>'venue'=v.data->>'name';
+CREATE OR REPLACE FUNCTION public.wt_gateway(p_route text, p_method text, p_token text, p_new_token text, p_body jsonb, p_ip text)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SET search_path TO ''
+AS $function$
 declare
  s public.wt_sessions%rowtype; sh public.wt_shows%rowtype; r public.wt_reservations%rowtype;
  v jsonb; chosen_seats jsonb; booked jsonb; selected_ids jsonb; total_amount integer; result jsonb; availability jsonb; a jsonb; g jsonb; se jsonb; oldse jsonb; held bigint; qty integer; rid text; sid text; gid text; n integer; lim integer;
@@ -55,11 +66,13 @@ begin
   return jsonb_build_object('sections',v,'version',n);
  end if;
  if p_route='/api/shows' and p_method='GET' then
-  return jsonb_build_object('shows',coalesce((select jsonb_agg((data-'seatMap')||jsonb_build_object('hasSeatMap',data->'seatMap' is not null and data->'seatMap'<>'null'::jsonb,'version',version) order by created desc,id) from public.wt_shows where (data->>'published')::boolean),'[]'::jsonb));
+  return jsonb_build_object('shows',coalesce((select jsonb_agg((data-'seatMap')||jsonb_build_object('hasSeatMap',data->'seatMap' is not null and data->'seatMap'<>'null'::jsonb,'version',version) order by created desc,id) from public.wt_shows where (data->>'published')::boolean and data->>'deletedAt' is null),'[]'::jsonb),
+  'retiredPosters',coalesce((select jsonb_agg(distinct p.value) from public.wt_shows h cross join lateral jsonb_array_elements(jsonb_build_array(h.data->'poster',h.data->'legacyPoster')) p where h.data->>'deletedAt' is not null and h.data->'deletedWasPublished'='true'::jsonb and p.value<>'null'::jsonb and not exists(select 1 from public.wt_shows active where (active.data->>'published')::boolean and (active.data->'poster'=p.value or active.data->'legacyPoster'=p.value))),'[]'::jsonb));
  end if;
+
  if p_route ~ '^/api/shows/[a-zA-Z0-9_-]+$' and p_method='GET' then
   select * into sh from public.wt_shows where id=split_part(p_route,'/',4);
-  if sh.id is null or (not (sh.data->>'published')::boolean and s.admin is null) then return jsonb_build_object('error','공연을 찾을 수 없습니다.','status',404); end if;
+  if sh.id is null or sh.data->>'deletedAt' is not null or (not (sh.data->>'published')::boolean and s.admin is null) then return jsonb_build_object('error','공연을 찾을 수 없습니다.','status',404); end if;
   availability='{}';
   for se in select value from jsonb_array_elements(sh.data->'sessions') loop
    a='{}';
@@ -110,6 +123,42 @@ begin
   update public.wt_homepage set sections=v,version=version+1 where id=1 returning version into n;
   return jsonb_build_object('sections',v,'version',n);
  end if;
+ if p_route='/api/admin/venues' and p_method='GET' then
+  return jsonb_build_object('venues',coalesce((select jsonb_agg(data||jsonb_build_object('version',version) order by created desc,id) from public.wt_venues),'[]'::jsonb));
+ end if;
+ if p_route='/api/admin/venues' and p_method='POST' then
+  insert into public.wt_venues(id,data) values(p_body->>'id',p_body);
+  return jsonb_build_object('venue',p_body||jsonb_build_object('version',1));
+ end if;
+ if p_route ~ '^/api/admin/venues/[a-zA-Z0-9_-]+$' and p_method='PUT' then
+  select data,version into a,n from public.wt_venues where id=split_part(p_route,'/',5) for update;
+  if a is null then return jsonb_build_object('error','공연장을 찾을 수 없습니다.','status',404); end if;
+  if n is distinct from (p_body->>'version')::integer then return jsonb_build_object('error','공연장 정보가 변경되었습니다. 다시 불러와 주세요.','status',409); end if;
+  a=p_body-'version';
+  update public.wt_venues set data=a,version=version+1 where id=a->>'id' returning version into n;
+  update public.wt_shows set data=data||jsonb_build_object('venueId',a->'id','venue',a->'name','venueImage',a->'logo','address',a->'address','venuePhone',a->'phone','venueWebsite',a->'website','venueMapUrl',a->'mapUrl','venueLat','','venueLng',''),version=version+1 where data->>'venueId'=a->>'id';
+  return jsonb_build_object('venue',a||jsonb_build_object('version',n));
+ end if;
+ if p_route ~ '^/api/admin/shows/[a-zA-Z0-9_-]+/(delete|restore)$' and p_method='POST' then
+  select * into sh from public.wt_shows where id=split_part(p_route,'/',5) for update;
+  if sh.id is null then return jsonb_build_object('error','공연을 찾을 수 없습니다.','status',404); end if;
+  if jsonb_typeof(p_body->'version') is distinct from 'number' or coalesce(p_body->>'version','') !~ '^[1-9][0-9]{0,8}$' then return jsonb_build_object('error','공연 버전을 확인해 주세요.','status',400); end if;
+  if sh.version<>(p_body->>'version')::integer then return jsonb_build_object('error','공연 정보가 변경되었습니다. 다시 불러와 주세요.','status',409); end if;
+  if split_part(p_route,'/',6)='delete' then
+   if sh.data->>'deletedAt' is not null then return jsonb_build_object('error','이미 삭제된 공연입니다.','status',409); end if;
+   v=sh.data||jsonb_build_object('deletedAt',now(),'deletedWasPublished',sh.data->'published','published',false);
+  else
+   if sh.data->>'deletedAt' is null then return jsonb_build_object('error','삭제된 공연이 아닙니다.','status',409); end if;
+   v=(sh.data-'deletedAt'-'deletedWasPublished')||jsonb_build_object('published',sh.data->'deletedWasPublished'='true'::jsonb);
+  end if;
+  update public.wt_shows set data=v,version=version+1 where id=sh.id returning * into sh;
+  return jsonb_build_object('show',sh.data||jsonb_build_object('version',sh.version));
+ end if;
+ if ((p_route='/api/admin/shows' and p_method='POST') or (p_route ~ '^/api/admin/shows/[a-zA-Z0-9_-]+$' and p_method='PUT')) and coalesce(p_body->>'venueId','')<>'' then
+  select data into a from public.wt_venues where id=p_body->>'venueId';
+  if a is null then return jsonb_build_object('error','등록된 공연장을 선택해 주세요.','status',400); end if;
+  p_body=p_body||jsonb_build_object('venueId',a->'id','venue',a->'name','venueImage',a->'logo','address',a->'address','venuePhone',a->'phone','venueWebsite',a->'website','venueMapUrl',a->'mapUrl','venueLat','','venueLng','');
+ end if;
  if p_route='/api/admin/password' and p_method='POST' then
   if not exists(select 1 from public.wt_admins where username=s.admin and password_hash=extensions.crypt(p_body->>'currentPassword',password_hash)) then return jsonb_build_object('error','현재 비밀번호를 확인해 주세요.','status',401); end if;
   update public.wt_admins set password_hash=extensions.crypt(p_body->>'newPassword',extensions.gen_salt('bf',12)) where username=s.admin;
@@ -117,7 +166,7 @@ begin
   return jsonb_build_object('ok',true);
  end if;
  if p_route='/api/admin/uploads' and p_method='POST' then return jsonb_build_object('ok',true); end if;
- if p_route='/api/admin/shows' and p_method='GET' then return jsonb_build_object('shows',coalesce((select jsonb_agg(data||jsonb_build_object('version',version) order by created desc,id) from public.wt_shows),'[]'::jsonb)); end if;
+ if p_route='/api/admin/shows' and p_method='GET' then return jsonb_build_object('shows',coalesce((select jsonb_agg(data||jsonb_build_object('version',version) order by created desc,id) from public.wt_shows where data->>'deletedAt' is null),'[]'::jsonb),'deletedShows',coalesce((select jsonb_agg(data||jsonb_build_object('version',version) order by data->>'deletedAt' desc,id) from public.wt_shows where data->>'deletedAt' is not null),'[]'::jsonb)); end if;
  if p_route in ('/api/reservations','/api/admin/reservations') and p_method='GET' then
   return jsonb_build_object('reservations',coalesce((select jsonb_agg(to_jsonb(x) order by x.created desc) from (select id,quantity,amount,status,snapshot,created from public.wt_reservations where owner=s.owner or (p_route='/api/admin/reservations' and s.admin is not null) order by created desc limit 1000) x),'[]'::jsonb));
  end if;
@@ -128,6 +177,7 @@ begin
  if p_route ~ '^/api/admin/shows/[a-zA-Z0-9_-]+$' and p_method='PUT' then
   select * into sh from public.wt_shows where id=split_part(p_route,'/',5) for update;
   if sh.id is null then return jsonb_build_object('error','공연을 찾을 수 없습니다.','status',404); end if;
+  if sh.data->>'deletedAt' is not null then return jsonb_build_object('error','삭제된 공연은 복원 후 수정해 주세요.','status',409); end if;
   if sh.version<>(p_body->>'version')::integer then return jsonb_build_object('error','다른 창에서 수정되었습니다. 최신 정보를 불러와 주세요.','status',409); end if;
   if coalesce(sh.data->'seatMap','null'::jsonb) is distinct from coalesce(p_body->'seatMap','null'::jsonb) and exists(select 1 from public.wt_reservations where show_id=sh.id and status='requested') then return jsonb_build_object('error','신청이 남아 있는 공연의 좌석도·배치는 변경할 수 없습니다. 먼저 기존 신청을 처리해 주세요.','status',409); end if;
   for result in select jsonb_build_object('sid',session_id,'gid',grade_id,'n',sum(quantity)) from public.wt_reservations where show_id=sh.id and status='requested' group by session_id,grade_id loop
@@ -185,7 +235,8 @@ begin
   return jsonb_build_object('ok',true);
  end if;
  return jsonb_build_object('error','요청 경로를 찾을 수 없습니다.','status',404);
-end $$;
+end $function$
+;
 revoke all on function public.wt_gateway(text,text,text,text,jsonb,text) from public,anon,authenticated;
 grant execute on function public.wt_gateway(text,text,text,text,jsonb,text) to service_role;
 insert into storage.buckets(id,name,public,file_size_limit,allowed_mime_types) values('winticket','winticket',true,5242880,array['image/png','image/jpeg','image/webp']);

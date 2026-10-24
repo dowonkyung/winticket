@@ -1,0 +1,18 @@
+import {api,el} from './api.js?v=members-1';
+export function createVenueEditor(root,{onSaved,notify}){
+ let venues=[],current={},uploading=false,saving=false;
+ const header=el('div',undefined,'section-heading'),title=el('h2','공연장 관리'),add=el('button','＋ 새 공연장','secondary');add.type='button';header.append(title,add);
+ const layout=el('div',undefined,'venue-admin-layout'),list=el('div',undefined,'venue-admin-list'),form=el('form',undefined,'venue-admin-form'),fields={};
+ for(const [name,label,max] of [['name','공연장 이름',200],['address','주소',300],['phone','연락처',80],['website','홈페이지',500],['mapUrl','공연장 위치 iframe 링크 또는 코드',6000]]){const l=el('label',label),i=el(name==='mapUrl'?'textarea':'input');i.name=name;i.maxLength=max;i.required=name==='name';if(name==='mapUrl')i.rows=4;else i.type=name==='website'?'url':'text';if(name==='website')i.placeholder='https://';l.append(i);form.append(l);fields[name]=i;}
+ const logoLabel=el('label','로고 이미지'),file=el('input'),image=el('img',undefined,'upload-preview'),clear=el('button','로고 비우기','text-button');file.type='file';file.accept='image/png,image/jpeg,image/webp';file.setAttribute('aria-label','공연장 로고 업로드');image.alt='공연장 로고 미리보기';clear.type='button';logoLabel.append(file,image,clear);form.append(logoLabel,el('p','지도 서비스의 공유 → 지도 삽입에서 제공하는 HTTPS 주소 또는 iframe 코드를 입력하세요. 일부 서비스는 일반 지도 링크의 iframe 표시를 허용하지 않습니다.','hint'),el('p','공연장 정보를 수정하면 이 공연장을 선택한 공연의 공연장정보에도 반영됩니다.','hint'));
+ const save=el('button','공연장 저장','primary');save.type='submit';form.append(save);layout.append(list,form);root.append(header,layout);
+ function busy(){save.disabled=uploading||saving;add.disabled=uploading||saving;file.disabled=saving;clear.disabled=uploading||saving;}
+ function preview(){image.hidden=!current.logo;if(current.logo)image.src=current.logo;else image.removeAttribute('src');}
+ function draw(){list.replaceChildren();venues.forEach(v=>{const b=el('button',undefined,'show-list-item'+(current.id===v.id?' selected':''));b.type='button';b.append(el('strong',v.name),el('small',v.address||'주소 미등록'));b.disabled=uploading||saving;b.onclick=()=>edit(v);list.append(b);});if(!venues.length)list.append(el('p','등록된 공연장이 없습니다.','empty-state'));}
+ function edit(v={}){current=structuredClone(v);form.reset();for(const name of Object.keys(fields))fields[name].value=v[name]||'';preview();draw();}
+ add.onclick=()=>edit();clear.onclick=()=>{current.logo='';file.value='';preview();};
+ file.onchange=async()=>{const f=file.files[0];if(!f)return;if(f.size>5*1024*1024){notify('로고는 5MB 이하로 업로드해 주세요.',true);file.value='';return;}uploading=true;busy();draw();try{const base64=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(String(r.result).split(',')[1]);r.onerror=()=>reject(new Error('로고를 읽지 못했습니다.'));r.readAsDataURL(f);});const result=await api('/api/admin/uploads',{method:'POST',body:{base64}});current.logo=result.url;preview();notify('로고 업로드 완료 · 공연장 저장을 눌러 반영해 주세요.');}catch(e){notify(e.message,true);}finally{uploading=false;busy();draw();}};
+ async function load(){venues=(await api('/api/admin/venues')).venues;edit(venues.find(v=>v.id===current.id)||venues[0]||{});return venues;}
+ form.onsubmit=async e=>{e.preventDefault();if(uploading||saving)return;saving=true;busy();draw();try{const p={version:current.version,logo:current.logo||''};for(const name of Object.keys(fields))p[name]=fields[name].value.trim();const result=await api('/api/admin/venues'+(current.id?'/'+current.id:''),{method:current.id?'PUT':'POST',body:p});await load();edit(result.venue);await onSaved(venues);notify('공연장이 저장되었습니다. 연결된 공연의 공연장정보에도 반영했습니다.');}catch(e){notify(e.message,true);}finally{saving=false;busy();draw();}};
+ return {load};
+}

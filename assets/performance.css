@@ -6,3 +6,6 @@
 .performance-page .wrap_detail_tab .list_detail_menu li button .line{display:inline-block;box-sizing:content-box;height:32px;line-height:51px;padding:18px 12px 0;border-bottom:1px solid #f1f1f1}
 .performance-page .wrap_detail_tab .list_detail_menu li button .line .menu{display:inline-block;height:16px;background-image:url(detailref-detail_tab_menu.png);background-repeat:no-repeat;vertical-align:top}
 .performance-page .wrap_detail_tab .list_detail_menu li.on button .line{border-bottom-color:#00cd3c}
+
+/* Venue logos keep their aspect ratio inside the original profile frame. */
+.performance-page .section_detailview_product .wrap_detailview_cont .box_consert_profile_in .box_logo_thumb img{width:100%;height:100%;object-fit:contain;object-position:center;background:#fff}.performance-page .box_consert_profile_in .box_logo_thumb{overflow:hidden}.performance-page .box_consert_txt{min-width:0;overflow-wrap:anywhere}

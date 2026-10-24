@@ -1,3 +1,4 @@
+import {mapEmbedUrl,validateVenue,venueFields} from '../../../assets/venue-model.js';
 import {validateBookingNotice} from '../../../assets/notice-model.js';
 import {validateSeatMap,flattenSeats} from '../../../assets/seat-model.js';
 const fail=(status,message)=>Object.assign(new Error(message),{status});
@@ -10,6 +11,7 @@ export function validateShow(raw,id,xml={}){
  const v={id,title:string(raw.title,200),category:string(raw.category,50),poster:imagePath(raw.poster),detailImage:imagePath(raw.detailImage||''),venue:string(raw.venue,200),address:string(raw.address||'',300),age:string(raw.age||'',100),duration:string(raw.duration||'',100),artist:string(raw.artist||'',300),organizer:string(raw.organizer||'',300),description:string(raw.description||'',20000),notice:string(raw.notice||'',20000),salesStart:string(raw.salesStart||'',16),maxTickets:integer(raw.maxTickets,1,10),published:raw.published===true,exclusive:raw.exclusive===true};
  for(const name of ['noticeImage','noticeImage2','artistImage','venueImage'])v[name]=imagePath(raw[name]||'');
  v.bookingNotice=validateBookingNotice(raw.bookingNotice);v.dateView=raw.dateView==='calendar'?'calendar':'list';v.certifiedBooking=raw.certifiedBooking!==false;
+ v.venueId=string(raw.venueId||'',80);v.venueMapUrl=mapEmbedUrl(raw.venueMapUrl||'');
  v.venuePhone=string(raw.venuePhone||'',80);v.venueWebsite=string(raw.venueWebsite||'',500);
  if(v.venueWebsite){let u;try{u=new URL(v.venueWebsite);}catch{throw fail(400,'공연장 홈페이지 URL을 확인해 주세요.');}if(u.protocol!=='https:'||u.username||u.password)throw fail(400,'공연장 홈페이지는 HTTPS 주소를 입력해 주세요.');}
  for(const [key,max] of [['venueLat',90],['venueLng',180]]){const value=raw[key];if(value===undefined||value===null||value==='')v[key]='';else{const n=Number(value);if(!Number.isFinite(n)||Math.abs(n)>max)throw fail(400,'공연장 지도 좌표를 확인해 주세요.');v[key]=String(n);}}

@@ -1,5 +1,6 @@
 import {DOMParser,XMLSerializer} from 'npm:@xmldom/xmldom@0.9.12';
 import {createClient} from 'npm:@supabase/supabase-js@2.95.3';
+import {validateVenue} from '../../../assets/venue-model.js';
 import {validateShow} from './validation.js';
 
 const base=Deno.env.get('SUPABASE_URL')!;
@@ -35,6 +36,7 @@ Deno.serve(async req=>{
    const version=body.version,id=req.method==='POST'?crypto.randomUUID():path.split('/').at(-1);
    body=validateShow(body,id,{Parser:DOMParser,Serializer:XMLSerializer});if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'공연 버전을 확인해 주세요.'},400);body.version=version;}
   }
+  if((path==='/api/admin/venues'&&req.method==='POST')||(/^\/api\/admin\/venues\/[a-zA-Z0-9_-]+$/.test(path)&&req.method==='PUT')){const version=body.version;body=validateVenue(body,req.method==='POST'?crypto.randomUUID():path.split('/').at(-1));if(req.method==='PUT'){if(!Number.isInteger(version)||version<1)return respond({error:'공연장 버전을 확인해 주세요.'},400);body.version=version;}}
   if(path==='/api/reservations'&&req.method==='POST'&&!Array.isArray(body.seatIds)&&(!Number.isInteger(body.quantity)||body.quantity<1||body.quantity>10||!['showId','sessionId','gradeId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'공연·회차·수량을 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.seatIds!==undefined&&(!Array.isArray(body.seatIds)||body.seatIds.length<1||body.seatIds.length>10||new Set(body.seatIds).size!==body.seatIds.length||!body.seatIds.every(s=>typeof s==='string'&&/^[-\w]{1,100}$/.test(s))||!['showId','sessionId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'선택한 좌석 정보를 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.showVersion!==undefined&&(!Number.isInteger(body.showVersion)||body.showVersion<1))return respond({error:'공연 정보 버전을 확인해 주세요.'},400);
