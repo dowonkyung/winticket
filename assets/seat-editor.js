@@ -1,4 +1,4 @@
-import {el} from './api.js?v=seats-1';
+import {el} from './api.js?v=members-1';
 import {sanitizeMap,mapElement,flattenSeats} from './seat-model.js?v=seats-1';
 export function createSeatEditor(root,{getGrades,onError}){
  let map=null,current='',history=[];

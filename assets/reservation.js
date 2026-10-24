@@ -1,4 +1,5 @@
-import {api,session,el,money,dateLabel} from './api.js?v=seats-1';
+import {API_BASE} from './config.js?v=members-1';
+import {api,session,el,money,dateLabel} from './api.js?v=members-1';
 import {mapElement,bindZones,flattenSeats,seatLabel} from './seat-model.js?v=seats-1';
 const $=s=>document.querySelector(s),params=new URLSearchParams(location.search),id=params.get('id');
 let show,availability={},occupied={},sid=params.get('session')||'',zoneId='',selected=new Set(),gradeId='',quantity=0,zoom=1,confirming=false,busy=false,preview=false,loaded=false,completed=false;
@@ -54,6 +55,6 @@ $('#map-zoom-in').addEventListener('click',()=>{zoom=Math.min(3,zoom+.25);render
 window.addEventListener('focus',()=>{if(loaded&&!completed&&!preview)refresh().catch(()=>{});});
 try{
  const previewKey=params.get('preview');if(previewKey){const saved=JSON.parse(localStorage.getItem('winticket-preview-'+previewKey)||'null');if(!saved||Date.now()-saved.created>1200000)throw new Error('미리보기 유효기간이 지났습니다. 관리자에서 다시 열어 주세요.');show=saved.show;preview=true;sid=show.sessions[0]?.id||'';occupied={};availability=Object.fromEntries(show.sessions.map(s=>[s.id,Object.fromEntries(show.grades.map(g=>[g.id,show.seatMap?seats().filter(x=>!x.blocked&&x.gradeId===g.id).length:g.capacity]))]));notice('관리자 미리보기 · 저장 전 화면이며 신청은 진행되지 않습니다.');render();}
- else{if(!id)throw new Error('공연 정보가 없습니다.');await session();await refresh();}
+ else{if(!id)throw new Error('공연 정보가 없습니다.');const account=await session(true);if(API_BASE&&!account.member){location.replace('login.html?next='+encodeURIComponent('reservation.html'+location.search));throw new Error('로그인 페이지로 이동합니다.');}await refresh();}
  loaded=true;$('#reservation-shell').setAttribute('aria-busy','false');
 }catch(e){error(e.message);$('#popup-title').textContent='공연을 불러오지 못했습니다.';$('#reservation-shell').setAttribute('aria-busy','false');}

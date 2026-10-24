@@ -1,5 +1,5 @@
-import {createSeatEditor} from './seat-editor.js?v=seats-1';
-import {api,session,el,money,showLink} from './api.js?v=seats-1';
+import {createSeatEditor} from './seat-editor.js?v=members-1';
+import {api,session,el,money,showLink} from './api.js?v=members-1';
 import {API_BASE} from './config.js?v=supabase-1';
 document.querySelector('#password-settings').hidden=!API_BASE;
 document.querySelector('#password-form').addEventListener('submit',async e=>{e.preventDefault();const f=e.currentTarget,b=e.submitter,m=document.querySelector('#password-message');b.disabled=true;try{await api('/api/admin/password',{method:'POST',body:{currentPassword:f.elements.currentPassword.value,newPassword:f.elements.newPassword.value}});f.reset();m.textContent='비밀번호가 변경되었으며 다른 관리자 세션은 로그아웃되었습니다.';}catch(err){m.textContent=err.message;}finally{b.disabled=false;}});

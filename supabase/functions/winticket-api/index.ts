@@ -38,7 +38,24 @@ Deno.serve(async req=>{
   if(path==='/api/reservations'&&req.method==='POST'&&!Array.isArray(body.seatIds)&&(!Number.isInteger(body.quantity)||body.quantity<1||body.quantity>10||!['showId','sessionId','gradeId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'공연·회차·수량을 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.seatIds!==undefined&&(!Array.isArray(body.seatIds)||body.seatIds.length<1||body.seatIds.length>10||new Set(body.seatIds).size!==body.seatIds.length||!body.seatIds.every(s=>typeof s==='string'&&/^[-\w]{1,100}$/.test(s))||!['showId','sessionId'].every(k=>typeof body[k]==='string'&&body[k].length<=80)))return respond({error:'선택한 좌석 정보를 확인해 주세요.'},400);
   if(path==='/api/reservations'&&req.method==='POST'&&body.showVersion!==undefined&&(!Number.isInteger(body.showVersion)||body.showVersion<1))return respond({error:'공연 정보 버전을 확인해 주세요.'},400);
-  const {data,error}=await db.rpc('wt_gateway',{p_route:path,p_method:req.method,p_token:rawToken?await hash(rawToken):'',p_new_token:await hash(fresh),p_body:path==='/api/admin/uploads'?{}:body,p_ip:await hash(req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'unknown')});
+  let gatewayToken=rawToken?await hash(rawToken):'',member:any=null;
+  const authorization=req.headers.get('authorization');
+  if(authorization){
+   if(!authorization.startsWith('Bearer ')||authorization.length>8192)return respond({error:'다시 로그인해 주세요.'},401);
+   const jwt=authorization.slice(7);
+   const {data:identity,error:identityError}=await db.auth.getUser(jwt);
+   if(identityError||!identity.user)return respond({error:'로그인이 만료되었습니다. 다시 로그인해 주세요.'},401);
+   let claims:any;try{const segment=jwt.split('.')[1].replaceAll('-','+').replaceAll('_','/');claims=JSON.parse(atob(segment));}catch{return respond({error:'다시 로그인해 주세요.'},401);}
+   if(!/^[a-f0-9-]{36}$/.test(claims.session_id||'')||!Number.isFinite(claims.exp))return respond({error:'다시 로그인해 주세요.'},401);
+   gatewayToken=await hash('member:'+jwt);
+   const {data:profile,error:profileError}=await db.rpc('wt_member_session',{p_token:gatewayToken,p_user:identity.user.id,p_session:claims.session_id,p_expires:new Date(claims.exp*1000).toISOString()});
+   if(profileError)return respond({error:'회원 정보를 확인하지 못했습니다.'},500);
+   if(profile.error)return respond(profile,profile.status||401);
+   member=profile;
+   if(path.startsWith('/api/admin/'))return respond({error:'별도 관리자 계정으로 로그인해 주세요.'},403);
+  }
+  if(path==='/api/reservations'&&req.method==='POST'&&!member)return respond({error:'로그인 후 예매해 주세요.','loginRequired':true},401);
+  const {data,error}=await db.rpc('wt_gateway',{p_route:path,p_method:req.method,p_token:gatewayToken,p_new_token:await hash(fresh),p_body:path==='/api/admin/uploads'?{}:body,p_ip:await hash(req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()||'unknown')});
   if(error){console.error('gateway',error.code,error.message);return respond({error:'서버에서 요청을 처리하지 못했습니다.'},500);}
   if(data.error)return respond({error:data.error},data.status||400);
   if(path==='/api/admin/uploads'&&req.method==='POST'){
@@ -52,6 +69,7 @@ Deno.serve(async req=>{
    if(uploadError){console.error('upload',uploadError.message);return respond({error:'이미지를 업로드하지 못했습니다.'},500);}
    return respond({url:base+'/storage/v1/object/public/winticket/'+name},201);
   }
+  if(path==='/api/session')data.member=member;
   if(data.newSession){delete data.newSession;data.token=fresh;}
   else delete data.newSession;
   return respond(data,req.method==='POST'&&['/api/admin/shows','/api/reservations'].includes(path)?201:200);

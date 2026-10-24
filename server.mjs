@@ -140,7 +140,7 @@ export async function createApplication(options={}){
    }
    if(!['GET','HEAD'].includes(method))throw fail(405,'허용되지 않은 요청입니다.');
    let file;
-   const pages={'/':'index.html','/index.html':'index.html','/performance.html':'performance.html','/admin.html':'admin.html','/myticket.html':'myticket.html','/reservation.html':'reservation.html','/seed.json':'seed.json'};
+   const pages={'/':'index.html','/index.html':'index.html','/performance.html':'performance.html','/admin.html':'admin.html','/myticket.html':'myticket.html','/reservation.html':'reservation.html','/login.html':'login.html','/seed.json':'seed.json'};
    if(pages[route])file=path.join(root,pages[route]);
    else if(/^\/assets\/[a-zA-Z0-9_.@-]+$/.test(route))file=path.join(root,route.slice(1));
    else if(/^\/uploads\/[a-f0-9]{32}\.(png|jpg|webp)$/.test(route))file=path.join(data,route.slice(1));

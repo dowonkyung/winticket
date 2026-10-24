@@ -1,4 +1,4 @@
-import {api,session,catalog,el,money,dateLabel} from './api.js?v=seats-1';
+import {api,session,catalog,el,money,dateLabel} from './api.js?v=members-1';
 const root=document.querySelector('#booking-root');
 const id=new URLSearchParams(location.search).get('id')||'nct-wish-2027';
 let show,availability={},offline=false,selectedDate='',selectedSession='',month='',busy=false;
@@ -48,7 +48,7 @@ function renderPage(){
  const prices=el('div');if(!show.grades.length)prices.append(el('p','가격 정보는 준비 중입니다.'));show.grades.forEach(g=>{const row=el('div',undefined,'price-line'),dot=el('i',undefined,'grade-dot');dot.style.backgroundColor=g.color;row.append(dot,el('span',g.name),el('span',money(g.price)));prices.append(row);});panels.detail.append(section('가격정보',prices),section('예매 공지사항',show.notice||'공지사항이 없습니다.'));
  const description=section('작품설명',show.description||'상세정보는 준비 중입니다.');if(show.detailImage){const image=el('img',undefined,'detail-image');image.src=show.detailImage;image.alt=show.title+' 상세 안내';image.loading='lazy';description.append(image);}panels.detail.append(description);if(show.organizer)panels.detail.append(section('기획사 정보',show.organizer));
  panels.venue.append(section(show.venue,show.address||'공연장 주소는 준비 중입니다.'));
- panels.guide.append(section('예매 신청 안내',`날짜와 시간을 선택한 뒤 좌석등급과 수량을 선택해 주세요.\n회차당 최대 ${show.maxTickets}매까지 신청할 수 있습니다.\n신청은 서버에 저장되며, 이 브라우저의 마이티켓에서 확인·취소할 수 있습니다.\n지정좌석 공연은 예매창에서 구역과 좌석 번호를 선택합니다. 좌석도 미등록 공연은 등급별 수량으로 신청합니다. 현재 결제·발권은 제공하지 않으며 유료 티켓이 발급되지 않습니다.\n신청 내역을 보려면 동일한 브라우저를 이용해 주세요. 브라우저 저장 데이터 삭제 시 내역 확인이 어려울 수 있습니다.`));
+ panels.guide.append(section('예매 신청 안내',`날짜와 시간을 선택한 뒤 좌석등급과 수량을 선택해 주세요.\n회차당 최대 ${show.maxTickets}매까지 신청할 수 있습니다.\n로그인한 계정으로 마이티켓에서 신청을 확인·취소할 수 있습니다.\n지정좌석 공연은 예매창에서 구역과 좌석 번호를 선택합니다. 좌석도 미등록 공연은 등급별 수량으로 신청합니다. 현재 결제·발권은 제공하지 않으며 유료 티켓이 발급되지 않습니다.\n다른 기기에서도 동일한 계정으로 로그인하면 신청 내역을 확인할 수 있습니다.`));
  renderCalendar();renderTime();renderSeats();
  catalog().then(({shows})=>shows.filter(s=>s.id!==show.id).slice(0,3).forEach(s=>{const a=el('a',undefined,'related-link');a.href='performance.html?id='+encodeURIComponent(s.id);const i=el('img');i.src=s.poster;i.alt='';const t=el('span',s.title);t.append(el('small',s.period));a.append(i,t);aside.append(a);})).catch(()=>{});
 }
